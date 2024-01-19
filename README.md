@@ -1,2 +1,3 @@
 # thermox
-Standalone JAX-aware package to simulate OU processes
+## Standalone JAX-accelerated package to simulate OU processes
+

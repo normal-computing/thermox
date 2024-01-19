@@ -4,10 +4,10 @@ from jax.lax import fori_loop, scan
 
 def collect_samples(
     key: jax.random.KeyArray, 
-    x0: jax.Array,
     A: jax.Array,
     b: jax.Array, 
     num_samples: int,
+    x0: jax.Array=None,
     D: jax.Array=None, 
     dt: float=0.1, 
     gamma: float=1., 
@@ -15,41 +15,43 @@ def collect_samples(
     burnin: int=0,
 ) -> jax.Array:
     """
-    Collects samples from the overdamped Langevin (ODL)
-    process, defined as:
+    Collects samples from the Ornstein-Uhlenbeck process
+    defined as:
     
-    dx = - A/γ * (x - b) dt + sqrt(2 * κ_0 * D/γ) dW
+    dx = - A * (x - b) dt + sqrt(2 * D) dW
     
     by using exact diagonalization. 
 
     Args:
         - key: jax PRNGKey.
-        - x0: initial state of the Langevin process.
+        - x0: initial state of the OU process.
         - A: drift matrix.
         - b: mean displacement vector.
-        - num_samples: float, number of samples to be collected.
-        - dt: float, time step.
-        - gamma: float, damping constant.
-        - k0: float, noise variance.
-        - burnin: burn-in, time before which samples are not collected.
+        - num_samples: number of samples to be collected.
+        - dt: time step.
+        - burnin: burn-in, steps before which samples are not collected.
 
     Returns:
         - samples: array-like, desired samples.
     """
 
-    if D is not None:
-        D_sqrt = jnp.linalg.cholesky(2 * D)
-    else:
+    if D is None:
         D_sqrt = jnp.eye(A.shape[0])
+    else:
+        D_sqrt = jnp.linalg.cholesky(2 * D)
+        A = jax.scipy.inv(D) @ A
 
-    drift = A / gamma
-    diffusion_scalar = jnp.sqrt(k0 / gamma)
+    if x0 is None:
+        x0 = jnp.zeros_like(b)
+
+    drift = A
+    mu = jnp.linalg.solve(drift, b)
 
     expm = jax.scipy.linalg.expm(-drift * dt)
     exp2m = expm @ expm
-    transition_mean = lambda x: b + expm @ (x - b)
+    transition_mean = lambda x: mu + expm @ (x - mu)
     transition_cov = (
-        diffusion_scalar * jnp.linalg.inv(drift) @ (jnp.eye(A.shape[0]) - exp2m)
+        jnp.linalg.inv(drift) @ (jnp.eye(A.shape[0]) - exp2m)
     )
     transition_cov_sqrt = jnp.linalg.cholesky(transition_cov)
 
