@@ -69,7 +69,7 @@ def collect_samples(
     return xs[burnin:]
 
 def collect_samples_full_diffusion_matrix(
-    key, A, b, D, num_samples, dt, burnin=0, solver_steps_per_dt=10
+    key, A, b, D, num_samples, dt, x0: jax.Array=None, burnin=0, solver_steps_per_dt=10
 ):
     """
     Collects samples from an overdamped Langevin (ODL)

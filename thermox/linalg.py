@@ -93,7 +93,7 @@ def negexpm(
     key = jax.random.PRNGKey(seed)
     b, x0 = jnp.zeros(A.shape[0]), jnp.zeros(A.shape[0])
     # samples = collect_samples_from_device_ODL_full_diffusion_matrix(key, x0, A, b, D=B, num_samples=num_samples, dt=dt, burnin=burnin)
-    samples = collect_samples_full_diffusion_matrix(key, A, b, D, num_samples=num_samples, dt=dt, burnin=burnin)
+    samples = collect_samples_full_diffusion_matrix(key, A, b, D=B, num_samples=num_samples, dt=dt, burnin=burnin)
     return autocovariance(samples) * jnp.exp(-alpha)
 
 def expm(
