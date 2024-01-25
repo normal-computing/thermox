@@ -15,7 +15,7 @@ Samples are then collected by exact diagonalization (therefore there is no discr
 
 ### Thermodynamic linear algebra
 
-The repository also features a Jupyter notebook, `thermo_linar_algebra.ipynb` where we explain how we can do linear algebra thanks to properties of the OU process, and how this can be implemented on electrical hardware.
+The repository also features a Jupyter notebook, `thermo_linar_algebra.ipynb` where we explain how we can do linear algebra thanks to properties of the OU process. The code can be used to reproduce results from https://arxiv.org/abs/2308.05660. 
 
 ### TODOs:
 
