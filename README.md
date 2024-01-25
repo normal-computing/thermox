@@ -17,4 +17,9 @@ Samples are then collected by exact diagonalization (therefore there is no discr
 
 The repository also features a Jupyter notebook, `thermo_linar_algebra.ipynb` where we explain how we can do linear algebra thanks to properties of the OU process, and how this can be implemented on electrical hardware.
 
+### TODOs:
 
+- [] Add tests for linear systems and inversion
+- [] Merge `collect_samples` and `collect_samples_full_diffusion_matrix`
+- [] Merge code with varying timesteps in Sam's fork
+- [] Get approval to publish on Normal's github
