@@ -19,7 +19,6 @@ The repository also features a Jupyter notebook, `thermo_linar_algebra.ipynb` wh
 
 ### TODOs:
 
-- [] Add tests for linear systems and inversion
+- [X] Add tests for linear systems and inversion
 - [] Merge `collect_samples` and `collect_samples_full_diffusion_matrix`
-- [] Merge code with varying timesteps in Sam's fork
-- [] Get approval to publish on Normal's github
+- [X] Merge code with varying timesteps in Sam's fork
