@@ -36,7 +36,7 @@ def collect_samples(
     if D is None:
         D_sqrt = jnp.eye(A.shape[0])
     else:
-        D_sqrt = jnp.linalg.cholesky(2*D)
+        D_sqrt = jnp.linalg.cholesky(D)
         A = jnp.linalg.inv(D_sqrt) @ A @ D_sqrt
 
     if x0 is None:
@@ -68,8 +68,8 @@ def collect_samples(
 
     return xs[burnin:]
 
-def collect_samples_from_device_ODL_full_diffusion_matrix(
-    key, x0, A, b, D, num_samples, dt, burnin=0, solver_steps_per_dt=10
+def collect_samples_full_diffusion_matrix(
+    key, A, b, D, num_samples, dt, burnin=0, solver_steps_per_dt=10
 ):
     """
     Collects samples from an overdamped Langevin (ODL)
@@ -90,7 +90,9 @@ def collect_samples_from_device_ODL_full_diffusion_matrix(
     Returns:
         - samples: array-like, desired samples.
     """
-    b = jnp.ones(x0.shape) * b
+    if x0 is None:
+        x0 = jnp.zeros_like(b)
+
     D_sqrt = jnp.linalg.cholesky(2 * D)
 
     def next_x(x_in, t_diff, tkey, steps_per_dt):
