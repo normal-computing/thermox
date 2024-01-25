@@ -1,16 +1,18 @@
 import jax
 import jax.numpy as jnp
-from thermox.sampler import collect_samples, collect_samples_full_diffusion_matrix
+from thermox.sampler import collect_samples, collect_samples_identity_diffusion
 from jax.lax import fori_loop
+from jax import Array
+
 
 def solve(
     A,
     b,
-    num_samples: int=10000,
-    dt: float=1., 
-    burnin: int=0,
-    seed: int=0,
-) -> jax.Array:
+    num_samples: int = 10000,
+    dt: float = 1.0,
+    burnin: int = 0,
+    seed: int = 0,
+) -> Array:
     """
     Obtain the solution of the linear system
 
@@ -20,116 +22,128 @@ def solve(
     process and calculating the mean over the samples.
 
     Args:
-        - A: drift matrix.
-        - b: mean displacement vector.
+        - A: Linear system matrix.
+        - b: Linear system vector.
         - num_samples: float, number of samples to be collected.
         - dt: float, time step.
-        - burnin: burn-in, time before which samples are not collected.
+        - burnin: burn-in, steps before which samples are not collected.
         - seed: random seed
-    
+
     Returns:
-        - x: approximate solution of the linear system.
+        - approximate solution, x, of the linear system.
     """
     key = jax.random.PRNGKey(seed)
-    samples = collect_samples(key, A, b, num_samples=num_samples, dt=dt, burnin=burnin)
+    ts = jnp.arange(burnin, burnin + num_samples) * dt
+    x0 = jnp.zeros_like(b)
+    samples = collect_samples_identity_diffusion(key, ts, x0, A, jnp.linalg.solve(A, b))
     return jnp.mean(samples, axis=0)
+
 
 def inv(
     A,
-    num_samples: int=10000,
-    dt: float=1., 
-    burnin: int=0,
-    seed: int=0,
-) -> jax.Array:
+    num_samples: int = 10000,
+    dt: float = 1.0,
+    burnin: int = 0,
+    seed: int = 0,
+) -> Array:
     """
-    Obtain the inverse of a matrix A by 
+    Obtain the inverse of a matrix A by
     collecting samples from an Ornstein-Uhlenbeck
     process and calculating the covariance of the samples.
 
     Args:
-        - A: drift matrix.
-        - b: mean displacement vector.
+        - A: Matrix to invert (must be symmetric positive definite).
         - num_samples: float, number of samples to be collected.
         - dt: float, time step.
-        - burnin: burn-in, time before which samples are not collected.
+        - burnin: burn-in, steps before which samples are not collected.
         - seed: random seed
-    
+
     Returns:
-        - inv: approximate inverse of A.
+        - approximate inverse of A.
     """
     key = jax.random.PRNGKey(seed)
+    ts = jnp.arange(burnin, burnin + num_samples) * dt
     b = jnp.zeros(A.shape[0])
-    samples = collect_samples(key, A, b, num_samples=num_samples, dt=dt, burnin=burnin)
+    x0 = jnp.zeros_like(b)
+    samples = collect_samples(key, ts, x0, A, b, 2 * jnp.eye(A.shape[0]))
     return jnp.cov(samples.T)
+
 
 def negexpm(
     A,
-    num_samples: int=10000,
-    dt: float=1., 
-    burnin: int=0,
-    seed: int=0,
-    alpha: float=0.,
-    rtol: float=1e-3,
-) -> jax.Array:
+    num_samples: int = 10000,
+    dt: float = 1.0,
+    burnin: int = 0,
+    seed: int = 0,
+    alpha: float = 0.0,
+) -> Array:
     """
-    Obtain the exponential of a matrix A by 
+    Obtain the negative exponential of a matrix A by
     collecting samples from an Ornstein-Uhlenbeck
     process and calculating the covariance of the samples.
 
     Args:
         - A: drift matrix.
-        - b: mean displacement vector.
         - num_samples: float, number of samples to be collected.
         - dt: float, time step.
-        - burnin: burn-in, time before which samples are not collected.
+        - burnin: burn-in, steps before which samples are not collected.
         - seed: random seed
-    
+        - alpha: float, regularization parameter to ensure diffusion matrix
+            is symmetric positive definite.
+
     Returns:
-        - inv: approximate inverse of A.
+        - approximate negative matrix exponential, exp(-A).
     """
-    A = (A + alpha * jnp.eye(A.shape[0])) / dt
-    B = 0.5 * (A + A.T)
+    A_shifted = (A + alpha * jnp.eye(A.shape[0])) / dt
+    B = A_shifted + A_shifted.T
 
     key = jax.random.PRNGKey(seed)
-    b, x0 = jnp.zeros(A.shape[0]), jnp.zeros(A.shape[0])
-    # samples = collect_samples_from_device_ODL_full_diffusion_matrix(key, x0, A, b, D=B, num_samples=num_samples, dt=dt, burnin=burnin)
-    samples = collect_samples_full_diffusion_matrix(key, A, b, D=B, num_samples=num_samples, dt=dt, burnin=burnin)
-    return autocovariance(samples) * jnp.exp(-alpha)
+
+    ts = jnp.arange(burnin, burnin + num_samples) * dt
+    b = jnp.zeros(A.shape[0])
+    x0 = jnp.zeros_like(b)
+    samples = collect_samples(key, ts, x0, A_shifted, b, B)
+    return autocovariance(samples) * jnp.exp(alpha)
+
 
 def expm(
     A,
-    num_samples: int=10000,
-    dt: float=1., 
-    burnin: int=0,
-    seed: int=0,
-    alpha: float=1000,
-    rtol: float=1e-3,
-) -> jax.Array:
+    num_samples: int = 10000,
+    dt: float = 1.0,
+    burnin: int = 0,
+    seed: int = 0,
+    alpha: float = 1.0,
+) -> Array:
     """
-    Obtain the exponential of a matrix A by 
+    Obtain the exponential of a matrix A by
     collecting samples from an Ornstein-Uhlenbeck
     process and calculating the covariance of the samples.
 
     Args:
         - A: drift matrix.
-        - b: mean displacement vector.
         - num_samples: float, number of samples to be collected.
         - dt: float, time step.
-        - burnin: burn-in, time before which samples are not collected.
+        - burnin: burn-in, steps before which samples are not collected.
         - seed: random seed
-    
+        - alpha: float, regularization parameter to ensure diffusion matrix
+            is symmetric positive definite.
+
     Returns:
-        - inv: approximate inverse of A.
+        - approximate matrix exponential, exp(A).
     """
+    return negexpm(-A, num_samples, dt, burnin, seed, alpha)
 
-    A_shifted = (-A + alpha * jnp.eye(A.shape[0])) / dt
-    B = 0.5 * (A_shifted + A_shifted.T)
-    key = jax.random.PRNGKey(seed)
-    b = jnp.zeros(A.shape[0])
-    samples = collect_samples(key, A, b, D=B, num_samples=num_samples, dt=dt, burnin=burnin)
-    return jnp.cov(samples.T) * jnp.exp(alpha)
 
-def autocovariance(samples):
+def autocovariance(samples: Array) -> Array:
+    """
+    Calculate the autocovariance of a set of samples.
+
+    Args:
+        - samples: array-like, samples from a stochastic process.
+
+    Returns:
+        - autocovariance of the samples.
+    """
     return fori_loop(
         0,
         len(samples) - 1,
