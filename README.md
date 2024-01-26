@@ -3,9 +3,9 @@
 
 This package provides a very simple interface to simulate OU processes of the form 
 
-$$ dx = - A(x - b) dt + \mathcal{N}(0, 2D) $$
+$$ dx = - A(x - b) dt + \mathcal{N}(0, D dt) $$
 
-To collect samples from this process, define $A, b,D$ ($D$ is optional) a JAX random key, and run the `collect_samples` function:
+To collect samples from this process, define $A, b,D$ ($D$ is optional) and a JAX random key. Then run the `collect_samples` function:
 
 ```
 collect_samples(key, A, b, num_samples, D=D) 
