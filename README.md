@@ -5,13 +5,12 @@ This package provides a very simple interface to simulate [Ornstein-Uhlenbeck](h
 
 $$ dx = - A(x - b) dt + \mathcal{N}(0, D dt) $$
 
-To collect samples from this process, define $ts,x0, A, b, D$ and a JAX random key. Then run the `collect_samples` function:
+To collect samples from this process, define a time interval `ts`, initial state `x0`, drift matrix `A`, mean displacement vector `b`, diffusion matrix `D` and a JAX random key. Then run the `collect_samples` function:
 
 ```
 collect_samples(key, ts, x0, A, b, D) 
 ```
-
-Samples are then collected by exact diagonalization (therefore there is no discretization error) and JAX scans. The user can also provide `burnin`, tune the time at which samples are collected `dt`, set an initial state, etc.
+Samples are then collected by exact diagonalization (therefore there is no discretization error) and JAX scans. 
 
 Here is a simple code example for a 5-dimensional OU process:
 ```
