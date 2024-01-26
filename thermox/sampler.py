@@ -1,6 +1,6 @@
 import jax
 import jax.numpy as jnp
-from jax.lax import, scan
+from jax.lax import scan
 from jax import Array
 
 
