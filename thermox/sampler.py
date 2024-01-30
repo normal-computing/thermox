@@ -3,26 +3,35 @@ import jax.numpy as jnp
 from jax.lax import scan
 from jax import Array
 
+from thermox.utils import (
+    preprocess,
+    preprocess_drift_matrix,
+    ProcessedDriftMatrix,
+    ProcessedDiffusionMatrix,
+)
+
 
 def collect_samples_identity_diffusion(
     key: Array,
     ts: Array,
     x0: Array,
-    A: Array,
+    A: Array | ProcessedDriftMatrix,
     b: Array,
 ) -> Array:
-    """
-    Collects samples from the Ornstein-Uhlenbeck process, defined as:
+    """Collects samples from the Ornstein-Uhlenbeck process, defined as:
 
     dx = - A * (x - b) dt + dW
 
     by using exact diagonalization.
 
+    Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2)
+    where T=len(ts).
+
     Args:
         - key: jax PRNGKey.
         - ts: array-like, times at which samples are collected. Includes time for x0.
         - x0: initial state of the process.
-        - A: drift matrix.
+        - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
         - b: drift displacement vector.
 
     Returns:
@@ -30,25 +39,22 @@ def collect_samples_identity_diffusion(
             shape: (len(ts), ) + x0.shape
     """
 
-    eigvals, eigvecs = jnp.linalg.eig(A)
-    eigvecs_inv = jnp.linalg.inv(eigvecs)
+    if isinstance(A, Array):
+        A = preprocess_drift_matrix(A)
 
     def expm_vp(v, dt):
-        out = eigvecs_inv @ v
-        out = jnp.exp(-eigvals * dt) * out
-        out = eigvecs @ out
+        out = A.eigvecs_inv @ v
+        out = jnp.exp(-A.eigvals * dt) * out
+        out = A.eigvecs @ out
         return out.real
 
     def transition_mean(x, dt):
         return b + expm_vp(x - b, dt)
 
-    symA = 0.5 * (A + A.T)
-    symA_eigvals, symA_eigvecs = jnp.linalg.eig(symA)
-
     def transition_cov_sqrt_vp(v, dt):
-        diag = ((1 - jnp.exp(-2 * symA_eigvals * dt)) / (2 * symA_eigvals)) ** 0.5
+        diag = ((1 - jnp.exp(-2 * A.sym_eigvals * dt)) / (2 * A.sym_eigvals)) ** 0.5
         out = diag * v
-        out = symA_eigvecs @ out
+        out = A.sym_eigvecs @ out
         return out.real
 
     def next_x(x, dt, tkey):
@@ -69,32 +75,38 @@ def collect_samples_identity_diffusion(
 
 
 def collect_samples(
-    key: Array, ts: Array, x0: Array, A: Array, b: Array, D: Array
+    key: Array,
+    ts: Array,
+    x0: Array,
+    A: Array | ProcessedDriftMatrix,
+    b: Array,
+    D: Array | ProcessedDiffusionMatrix,
 ) -> Array:
-    """
-    Collects samples from the Ornstein-Uhlenbeck process, defined as:
+    """Collects samples from the Ornstein-Uhlenbeck process, defined as:
 
     dx = - A * (x - b) dt + sqrt(D) dW
 
     by using exact diagonalization.
 
+    Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2)
+    where T=len(ts).
+
     Args:
         - key: jax PRNGKey.
         - ts: array-like, times at which samples are collected. Includes time for x0.
         - x0: initial state of the process.
-        - A: drift matrix.
+        - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
         - b: drift displacement vector.
-        - D: diffusion matrix.
+        - D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 
     Returns:
         - samples: array-like, desired samples.
             shape: (len(ts), ) + x0.shape
     """
-    D_sqrt = jnp.linalg.cholesky(D)
-    D_sqrt_inv = jnp.linalg.inv(D_sqrt)
-    y0 = D_sqrt_inv @ x0
-    A_y = D_sqrt_inv @ A @ D_sqrt
-    b_y = D_sqrt_inv @ b
-    ys = collect_samples_identity_diffusion(key, ts, y0, A_y, b_y)
-    return jax.vmap(jnp.matmul, in_axes=(None, 0))(D_sqrt, ys)
+    if isinstance(A, Array) or isinstance(D, Array):
+        A_y, D = preprocess(A, D)
 
+    y0 = D.sqrt_inv @ x0
+    b_y = D.sqrt_inv @ b
+    ys = collect_samples_identity_diffusion(key, ts, y0, A_y, b_y)
+    return jax.vmap(jnp.matmul, in_axes=(None, 0))(D.sqrt, ys)

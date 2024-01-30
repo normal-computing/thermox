@@ -7,7 +7,7 @@ $$ dx = - A(x - b) dt + \mathcal{N}(0, D dt) $$
 
 To collect samples from this process, define sampling times `ts`, initial state `x0`, drift matrix `A`, mean displacement vector `b`, diffusion matrix `D` and a JAX random key. Then run the `collect_samples` function:
 
-```
+```python
 collect_samples(key, ts, x0, A, b, D) 
 ```
 Samples are then collected by exact diagonalization (therefore there is no discretization error) and JAX scans. 
