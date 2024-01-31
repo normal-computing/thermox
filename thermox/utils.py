@@ -24,6 +24,7 @@ def preprocess_drift_matrix(A: Array, A_spd: bool = False) -> ProcessedDriftMatr
             If false uses jax.scipy.linalg.eig.
             jax.linalg.eigh supports gradients but assumes A is Hermitian
             (i.e. real symmetric).
+            See https://github.com/google/jax/issues/2748
 
     Returns:
         ProcessedDriftMatrix containing eigendeomcomposition of A and (A+A^T)/2.
@@ -81,6 +82,7 @@ def preprocess(
             If false uses jax.scipy.linalg.eig.
             jax.linalg.eigh supports gradients but assumes A is Hermitian
             (i.e. real symmetric).
+            See https://github.com/google/jax/issues/2748
 
     Returns:
         ProcessedDriftMatrix containing eigendeomcomposition of A_y and (A_y+A_y^T)/2.
