@@ -1,4 +1,3 @@
-from functools import partial
 from typing import NamedTuple, Tuple
 from jax import numpy as jnp
 from jax import Array
