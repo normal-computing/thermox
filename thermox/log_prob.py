@@ -73,7 +73,7 @@ def log_prob_identity_diffusion(
         0.0,
     )
 
-    return log_prob_val
+    return log_prob_val.real
 
 
 def log_prob(
@@ -82,6 +82,7 @@ def log_prob(
     A: Array | ProcessedDriftMatrix,
     b: Array,
     D: Array | ProcessedDiffusionMatrix,
+    A_spd: bool = False,
 ) -> float:
     """Calculates log probability of samples from the Ornstein-Uhlenbeck process,
     defined as:
@@ -100,12 +101,19 @@ def log_prob(
         - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
         - b: drift displacement vector.
         - D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
+        - A_spd: bool, whether A is symmetric positive definite.
+            gradients (via jax.linalg.eigh) only supported if A is
+            symmetric positive definite.
 
     Returns:
         - log probability of given xs.
     """
     if isinstance(A, Array) or isinstance(D, Array):
-        A_y, D = preprocess(A, D)
+        if isinstance(A, ProcessedDriftMatrix):
+            A = A.val
+        if isinstance(D, ProcessedDiffusionMatrix):
+            D = D.val
+        A_y, D = preprocess(A, D, eigh=A_spd)
 
     ys = vmap(jnp.matmul, in_axes=(None, 0))(D.sqrt_inv, xs)
     b_y = D.sqrt_inv @ b
