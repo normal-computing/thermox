@@ -113,7 +113,7 @@ def log_prob(
             A = A.val
         if isinstance(D, ProcessedDiffusionMatrix):
             D = D.val
-        A_y, D = preprocess(A, D, eigh=A_spd)
+        A_y, D = preprocess(A, D, A_spd=A_spd)
 
     ys = vmap(jnp.matmul, in_axes=(None, 0))(D.sqrt_inv, xs)
     b_y = D.sqrt_inv @ b
