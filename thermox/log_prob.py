@@ -50,18 +50,19 @@ def log_prob_identity_diffusion(
 
     def transition_cov_sqrt_inv_vp(v, dt):
         diag = ((1 - jnp.exp(-2 * A.sym_eigvals * dt)) / (2 * A.sym_eigvals)) ** 0.5
-        out = v / diag
-        out = A.sym_eigvecs @ out
+        out = A.sym_eigvecs.T @ v
+        out = out / diag
         return out.real
 
     def transition_cov_log_det(dt):
-        diag = ((1 - jnp.exp(-2 * A.sym_eigvals * dt)) / (2 * A.sym_eigvals)) ** 0.5
+        diag = (1 - jnp.exp(-2 * A.sym_eigvals * dt)) / (2 * A.sym_eigvals)
         return jnp.sum(jnp.log(diag))
 
     def logpt(yt, y0, dt):
         mean = transition_mean(y0, dt)
+        diff_val = transition_cov_sqrt_inv_vp(yt - mean, dt)
         return (
-            -jnp.linalg.norm(transition_cov_sqrt_inv_vp(yt - mean, dt)) / 2
+            -jnp.dot(diff_val, diff_val) / 2
             - transition_cov_log_det(dt) / 2
             - jnp.log(2 * jnp.pi) * (yt.shape[0] / 2)
         )
