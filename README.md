@@ -17,7 +17,7 @@ You can access log-probabilities of the OU process by running `thermox.log_prob`
 thermox.log_prob(ts, xs, A, b, D)
 ```
 
-which can be useful for e.g. maximum likelihood estimation of the parameters `A`, `b` and `D`.
+which can be useful for e.g. maximum likelihood estimation of the parameters `A`, `b` and `D` by composing with `jax.grad`.
 
 Additionally `thermox` provides a [`scipy`](https://docs.scipy.org/doc/scipy/reference/linalg.html) style suit of [**thermodynamic linear algebra**](https://arxiv.org/abs/2308.05660) primitives: `thermox.linalg.solve`, `thermox.linalg.inv`, `thermox.linalg.expm` and `thermox.linalg.negexpm` which all simulate an OU process under the hood. More details can be found in the [`thermo_linear_algebra.ipynb`](/thermo_linear_algebra.ipynb) notebook.
 
