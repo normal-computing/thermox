@@ -1,6 +1,6 @@
 from thermox import linalg
 
-from thermox.sampler import collect_samples
+from thermox.sampler import sample
 
 from thermox.log_prob import log_prob
 

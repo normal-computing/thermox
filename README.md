@@ -5,12 +5,25 @@ This package provides a very simple interface to **exactly** simulate [Ornstein-
 
 $$ dx = - A(x - b) dt + \mathcal{N}(0, D dt) $$
 
-To collect samples from this process, define sampling times `ts`, initial state `x0`, drift matrix `A`, mean displacement vector `b`, diffusion matrix `D` and a JAX random key. Then run the `collect_samples` function:
+To collect samples from this process, define sampling times `ts`, initial state `x0`, drift matrix `A`, displacement vector `b`, diffusion matrix `D` and a JAX random key. Then run `thermox.sample`:
 
 ```python
-collect_samples(key, ts, x0, A, b, D) 
+thermox.sample(key, ts, x0, A, b, D) 
 ```
-Samples are then collected by exact diagonalization (therefore there is no discretization error) and JAX scans. 
+Samples are then collected by exact diagonalization (therefore there is no discretization error) and JAX scans.
+
+You can access log-probabilities of the OU process by running `thermox.log_prob`:
+
+```python
+thermox.log_prob(ts, xs, A, b, D)
+```
+
+which can be useful for e.g. maximum likelihood estimation of the parameters `A`, `b` and `D`.
+
+Additionally `thermox` provides a [`scipy`](https://docs.scipy.org/doc/scipy/reference/linalg.html) style suit of [**thermodynamic linear algebra**](https://arxiv.org/abs/2308.05660) primitives: `thermox.linalg.solve`, `thermox.linalg.inv`, `thermox.linalg.expm` and `thermox.linalg.negexpm` which all simulate an OU process under the hood. More details can be found in the [`thermo_linear_algebra.ipynb`](/thermo_linear_algebra.ipynb) notebook.
+
+
+## Example usage
 
 Here is a simple code example for a 5-dimensional OU process:
 ```python
@@ -43,7 +56,7 @@ D = jnp.array([[2, 1, 0, 0, 0],
                [0, 0, 0, 0, 2]])
 
 # Collect samples
-samples = thermox.collect_samples(key, ts, x0, A, b, D)
+samples = thermox.sample(key, ts, x0, A, b, D)
 
 plt.figure(figsize=(12, 5))
 plt.plot(ts, samples, label=[f'Dimension {i+1}' for i in range(5)])
@@ -58,9 +71,5 @@ plt.show()
   <img src="https://storage.googleapis.com/normal-blog-artifacts/thermo-playground/ou_trajectories.png" width="600" lineheight = -10%/>
   <br>
 </p>
-
-### Thermodynamic linear algebra
-
-The repository also features a Jupyter notebook, `thermo_linar_algebra.ipynb` where we explain how we can do linear algebra thanks to properties of the OU process. The code can be used to reproduce results from https://arxiv.org/abs/2308.05660. 
 
 

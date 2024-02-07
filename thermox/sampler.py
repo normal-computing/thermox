@@ -11,7 +11,7 @@ from thermox.utils import (
 )
 
 
-def collect_samples_identity_diffusion(
+def sample_identity_diffusion(
     key: Array,
     ts: Array,
     x0: Array,
@@ -74,7 +74,7 @@ def collect_samples_identity_diffusion(
     return xs
 
 
-def collect_samples(
+def sample(
     key: Array,
     ts: Array,
     x0: Array,
@@ -108,5 +108,5 @@ def collect_samples(
 
     y0 = D.sqrt_inv @ x0
     b_y = D.sqrt_inv @ b
-    ys = collect_samples_identity_diffusion(key, ts, y0, A_y, b_y)
+    ys = sample_identity_diffusion(key, ts, y0, A_y, b_y)
     return jax.vmap(jnp.matmul, in_axes=(None, 0))(D.sqrt, ys)

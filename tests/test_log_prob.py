@@ -14,7 +14,7 @@ def test_log_prob_numeric_identity_diffusion():
     x0 = jax.random.normal(jax.random.PRNGKey(0), b_true.shape)
 
     rk = jax.random.PRNGKey(0)
-    samps = thermox.collect_samples(rk, ts, x0, A_true, b_true, D_true)
+    samps = thermox.sample(rk, ts, x0, A_true, b_true, D_true)
 
     def transition_mean(x0, dt):
         return b_true + jax.scipy.linalg.expm(-A_true * dt) @ (x0 - b_true)
@@ -54,7 +54,7 @@ def test_log_prob_numeric():
     x0 = jax.random.normal(jax.random.PRNGKey(0), b_true.shape)
 
     rk = jax.random.PRNGKey(0)
-    samps = thermox.collect_samples(rk, ts, x0, A_true, b_true, D_true)
+    samps = thermox.sample(rk, ts, x0, A_true, b_true, D_true)
 
     def transition_mean(x0, dt):
         return b_true + jax.scipy.linalg.expm(-A_true * dt) @ (x0 - b_true)
@@ -96,9 +96,9 @@ def test_MLE():
     n_trajecs = 3
     rks = jax.random.split(jax.random.PRNGKey(0), n_trajecs)
 
-    samps = jax.vmap(
-        lambda key: thermox.collect_samples(key, ts, x0, A_true, b_true, D_true)
-    )(rks)
+    samps = jax.vmap(lambda key: thermox.sample(key, ts, x0, A_true, b_true, D_true))(
+        rks
+    )
 
     A_sqrt_init = jnp.tril(jnp.eye(3) + jax.random.normal(rks[0], (3, 3)) * 1e-1)
     b_init = jnp.zeros(3)
