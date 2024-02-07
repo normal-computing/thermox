@@ -1,5 +1,4 @@
 # thermox
-## Standalone JAX-accelerated package to simulate Ornstein-Uhlenbeck processes
 
 This package provides a very simple interface to **exactly** simulate [Ornstein-Uhlenbeck](https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process) (OU) processes of the form 
 
