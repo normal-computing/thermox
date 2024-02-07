@@ -1,6 +1,6 @@
 import jax
 import jax.numpy as jnp
-from thermox.sampler import collect_samples, collect_samples_identity_diffusion
+from thermox.sampler import sample, sample_identity_diffusion
 from jax.lax import fori_loop
 from jax import Array
 
@@ -35,7 +35,7 @@ def solve(
     key = jax.random.PRNGKey(seed)
     ts = jnp.arange(burnin, burnin + num_samples) * dt
     x0 = jnp.zeros_like(b)
-    samples = collect_samples_identity_diffusion(key, ts, x0, A, jnp.linalg.solve(A, b))
+    samples = sample_identity_diffusion(key, ts, x0, A, jnp.linalg.solve(A, b))
     return jnp.mean(samples, axis=0)
 
 
@@ -65,7 +65,7 @@ def inv(
     ts = jnp.arange(burnin, burnin + num_samples) * dt
     b = jnp.zeros(A.shape[0])
     x0 = jnp.zeros_like(b)
-    samples = collect_samples(key, ts, x0, A, b, 2 * jnp.eye(A.shape[0]))
+    samples = sample(key, ts, x0, A, b, 2 * jnp.eye(A.shape[0]))
     return jnp.cov(samples.T)
 
 
@@ -102,7 +102,7 @@ def negexpm(
     ts = jnp.arange(burnin, burnin + num_samples) * dt
     b = jnp.zeros(A.shape[0])
     x0 = jnp.zeros_like(b)
-    samples = collect_samples(key, ts, x0, A_shifted, b, B)
+    samples = sample(key, ts, x0, A_shifted, b, B)
     return autocovariance(samples) * jnp.exp(alpha)
 
 
