@@ -69,7 +69,7 @@ def inv(
     return jnp.cov(samples.T)
 
 
-def negexpm(
+def expnegm(
     A,
     num_samples: int = 10000,
     dt: float = 1.0,
@@ -131,7 +131,7 @@ def expm(
     Returns:
         - approximate matrix exponential, exp(A).
     """
-    return negexpm(-A, num_samples, dt, burnin, seed, alpha)
+    return expnegm(-A, num_samples, dt, burnin, seed, alpha)
 
 
 def autocovariance(samples: Array) -> Array:

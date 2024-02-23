@@ -21,10 +21,10 @@ def test_inv():
     assert jnp.allclose(A @ A_inv, jnp.eye(2), atol=1e-1)
 
 
-def test_negexpm():
+def test_expnegm():
     A = jnp.array([[3, 2], [2, 4.0]])
 
-    expnegA = thermox.linalg.negexpm(A, num_samples=10000, dt=0.1, burnin=0, seed=0)
+    expnegA = thermox.linalg.expnegm(A, num_samples=10000, dt=0.1, burnin=0, seed=0)
 
     assert jnp.allclose(expnegA, jax.scipy.linalg.expm(-A), atol=1e-1)
 
