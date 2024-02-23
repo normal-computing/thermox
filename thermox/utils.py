@@ -1,9 +1,12 @@
-from typing import NamedTuple, Tuple
+from typing import Tuple
 from jax import numpy as jnp
 from jax import Array
+from dataclasses import dataclass
 
 
-class ProcessedDriftMatrix(NamedTuple):
+
+@dataclass
+class ProcessedDriftMatrix:
     """Stores eigendecompositions of A, (A+A^T)/2"""
 
     val: Array
@@ -28,7 +31,6 @@ def preprocess_drift_matrix(A: Array, A_spd: bool = False) -> ProcessedDriftMatr
     Returns:
         ProcessedDriftMatrix containing eigendeomcomposition of A and (A+A^T)/2.
     """
-    eig = jnp.linalg.eigh if A_spd else jnp.linalg.eig
     if A_spd:
         A_eigvals, A_eigvecs = jnp.linalg.eigh(A)
     else:
@@ -49,7 +51,8 @@ def preprocess_drift_matrix(A: Array, A_spd: bool = False) -> ProcessedDriftMatr
     )
 
 
-class ProcessedDiffusionMatrix(NamedTuple):
+@dataclass
+class ProcessedDiffusionMatrix:
     """Stores preprocessed diffusion matrix D^0.5 and D^-0.5 via Cholesky"""
 
     val: Array
@@ -88,7 +91,7 @@ def preprocess(
             See https://github.com/google/jax/issues/2748
 
     Returns:
-        ProcessedDriftMatrix containing eigendeomcomposition of A_y and (A_y+A_y^T)/2.
+        ProcessedDriftMatrix containing eigendecomposition of A_y and (A_y+A_y^T)/2.
             where A_y = D^0.5 @ A @ D^-0.5
         ProcessedDiffusionMatrix containing D^0.5 and D^-0.5.
     """
