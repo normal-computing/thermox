@@ -29,7 +29,11 @@ def preprocess_drift_matrix(A: Array, A_spd: bool = False) -> ProcessedDriftMatr
         ProcessedDriftMatrix containing eigendeomcomposition of A and (A+A^T)/2.
     """
     eig = jnp.linalg.eigh if A_spd else jnp.linalg.eig
-    A_eigvals, A_eigvecs = eig(A)
+    if A_spd:
+        A_eigvals, A_eigvecs = jnp.linalg.eigh(A)
+    else:
+        A_eigvals, A_eigvecs = jnp.linalg.eig(A)
+
     A_eigvecs_inv = jnp.linalg.inv(A_eigvecs)
 
     symA = 0.5 * (A + A.T)
@@ -88,7 +92,7 @@ def preprocess(
             where A_y = D^0.5 @ A @ D^-0.5
         ProcessedDiffusionMatrix containing D^0.5 and D^-0.5.
     """
-    D = preprocess_diffusion_matrix(D)
-    A_y = D.sqrt_inv @ A @ D.sqrt
-    A_y = preprocess_drift_matrix(A_y, A_spd)
-    return A_y, D
+    PD = preprocess_diffusion_matrix(D)
+    A_y = PD.sqrt_inv @ A @ PD.sqrt
+    PA_y = preprocess_drift_matrix(A_y, A_spd)
+    return PA_y, PD
