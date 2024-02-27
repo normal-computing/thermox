@@ -15,7 +15,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics",
     "License :: OSI Approved :: Apache Software License",
 ]
-dependencies = ["jax>=0.4.0", "jaxlib>=0.4.0"]
+dependencies = ["jax>=0.4.0", "jaxlib>=0.4.0", "pre-commit==3.6.2"]
 
 [project.optional-dependencies]
 dev = [

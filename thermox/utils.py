@@ -4,7 +4,6 @@ from jax import Array
 from dataclasses import dataclass
 
 
-
 @dataclass
 class ProcessedDriftMatrix:
     """Stores eigendecompositions of A, (A+A^T)/2"""
