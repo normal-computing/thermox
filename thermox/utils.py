@@ -1,11 +1,9 @@
-from typing import Tuple
+from typing import NamedTuple, Tuple
 from jax import numpy as jnp
 from jax import Array
-from dataclasses import dataclass
 
 
-@dataclass
-class ProcessedDriftMatrix:
+class ProcessedDriftMatrix(NamedTuple):
     """Stores eigendecompositions of A, (A+A^T)/2"""
 
     val: Array
@@ -50,8 +48,7 @@ def preprocess_drift_matrix(A: Array, A_spd: bool = False) -> ProcessedDriftMatr
     )
 
 
-@dataclass
-class ProcessedDiffusionMatrix:
+class ProcessedDiffusionMatrix(NamedTuple):
     """Stores preprocessed diffusion matrix D^0.5 and D^-0.5 via Cholesky"""
 
     val: Array

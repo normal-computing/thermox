@@ -15,7 +15,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics",
     "License :: OSI Approved :: Apache Software License",
 ]
-dependencies = ["jax>=0.4.0", "jaxlib>=0.4.0", "pre-commit==3.6.2"]
+dependencies = ["jax>=0.4.0", "jaxlib>=0.4.0"]
 
 [project.optional-dependencies]
 dev = [
@@ -23,8 +23,12 @@ dev = [
   'pytest',
   'optax',
   'mypy',
-  'black',
+  'pre-commit',
 ]
 
 [tool.setuptools]
 packages = ["thermox"]
+
+[tool.ruff]
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F821"]
