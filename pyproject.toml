@@ -17,5 +17,18 @@ classifiers = [
 ]
 dependencies = ["jax>=0.4.0", "jaxlib>=0.4.0"]
 
+[project.optional-dependencies]
+dev = [
+  'pytest-cov',
+  'pytest',
+  'optax',
+  'mypy',
+  'pre-commit',
+]
+
 [tool.setuptools]
 packages = ["thermox"]
+
+[tool.ruff]
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F821"]

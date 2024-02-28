@@ -86,7 +86,7 @@ def log_prob(
     b: Array,
     D: Array | ProcessedDiffusionMatrix,
     A_spd: bool = False,
-) -> float:
+) -> Array:
     """Calculates log probability of samples from the Ornstein-Uhlenbeck process,
     defined as:
 
