@@ -24,6 +24,7 @@ dev = [
   'optax',
   'mypy',
   'pre-commit',
+  'ruff',
 ]
 
 [tool.setuptools]
