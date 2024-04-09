@@ -11,12 +11,13 @@ from thermox.utils import (
 )
 
 
-def _sample_identity_diffusion(
+def sample_identity_diffusion(
     key: Array,
     ts: Array,
     x0: Array,
     A: Array | ProcessedDriftMatrix,
     b: Array,
+    A_spd: bool = False,
 ) -> Array:
     """Collects samples from the Ornstein-Uhlenbeck process, defined as:
 
@@ -33,6 +34,11 @@ def _sample_identity_diffusion(
         - x0: initial state of the process.
         - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
         - b: drift displacement vector.
+        - A_spd: if true uses jax.linalg.eigh to calculate eigendecomposition of A.
+            If false uses jax.scipy.linalg.eig.
+            jax.linalg.eigh supports gradients but assumes A is Hermitian
+            (i.e. real symmetric).
+            See https://github.com/google/jax/issues/2748
 
     Returns:
         - samples: array-like, desired samples.
@@ -40,7 +46,7 @@ def _sample_identity_diffusion(
     """
 
     if isinstance(A, Array):
-        A = preprocess_drift_matrix(A)
+        A = preprocess_drift_matrix(A, A_spd)
 
     def expm_vp(v, dt):
         out = A.eigvecs_inv @ v
@@ -117,5 +123,5 @@ def sample(
 
     y0 = D.sqrt_inv @ x0
     b_y = D.sqrt_inv @ b
-    ys = _sample_identity_diffusion(key, ts, y0, A_y, b_y)
+    ys = sample_identity_diffusion(key, ts, y0, A_y, b_y)
     return jax.vmap(jnp.matmul, in_axes=(None, 0))(D.sqrt, ys)
