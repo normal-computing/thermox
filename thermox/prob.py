@@ -110,9 +110,11 @@ def log_prob(
         - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
         - b: drift displacement vector.
         - D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
-        - A_spd: bool, whether A is symmetric positive definite.
-            gradients (via jax.linalg.eigh) only supported if A is
-            symmetric positive definite.
+        - A_spd: if true uses jax.linalg.eigh to calculate eigendecomposition of A.
+            If false uses jax.scipy.linalg.eig.
+            jax.linalg.eigh supports gradients but assumes A is Hermitian
+            (i.e. real symmetric).
+            See https://github.com/google/jax/issues/2748
 
     Returns:
         - log probability of given xs.
