@@ -18,11 +18,7 @@ classifiers = [
 dependencies = ["jax>=0.4.0", "jaxlib>=0.4.0"]
 
 [project.optional-dependencies]
-test = ["pre-commit", "pytest-cov", "ruff"]
-dev = [
-  'optax',
-  'mypy',
-]
+test = ["pre-commit", "pytest-cov", "ruff", "optax", "mypy"]
 
 [tool.setuptools]
 packages = ["thermox"]
