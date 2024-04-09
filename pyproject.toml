@@ -18,13 +18,10 @@ classifiers = [
 dependencies = ["jax>=0.4.0", "jaxlib>=0.4.0"]
 
 [project.optional-dependencies]
+test = ["pre-commit", "pytest-cov", "ruff"]
 dev = [
-  'pytest-cov',
-  'pytest',
   'optax',
   'mypy',
-  'pre-commit',
-  'ruff',
 ]
 
 [tool.setuptools]
