@@ -11,7 +11,7 @@ def solve(
     num_samples: int = 10000,
     dt: float = 1.0,
     burnin: int = 0,
-    seed: int = 0,
+    key: Array = None,
 ) -> Array:
     """
     Obtain the solution of the linear system
@@ -27,12 +27,13 @@ def solve(
         - num_samples: float, number of samples to be collected.
         - dt: float, time step.
         - burnin: burn-in, steps before which samples are not collected.
-        - seed: random seed
+        - key: JAX random key
 
     Returns:
         - approximate solution, x, of the linear system.
     """
-    key = jax.random.PRNGKey(seed)
+    if key is None:
+        key = jax.random.PRNGKey(0)
     ts = jnp.arange(burnin, burnin + num_samples) * dt
     x0 = jnp.zeros_like(b)
     samples = sample_identity_diffusion(key, ts, x0, A, jnp.linalg.solve(A, b))
@@ -44,7 +45,7 @@ def inv(
     num_samples: int = 10000,
     dt: float = 1.0,
     burnin: int = 0,
-    seed: int = 0,
+    key: Array = None,
 ) -> Array:
     """
     Obtain the inverse of a matrix A by
@@ -56,12 +57,13 @@ def inv(
         - num_samples: float, number of samples to be collected.
         - dt: float, time step.
         - burnin: burn-in, steps before which samples are not collected.
-        - seed: random seed
+        - key: JAX random key
 
     Returns:
         - approximate inverse of A.
     """
-    key = jax.random.PRNGKey(seed)
+    if key is None:
+        key = jax.random.PRNGKey(0)
     ts = jnp.arange(burnin, burnin + num_samples) * dt
     b = jnp.zeros(A.shape[0])
     x0 = jnp.zeros_like(b)
@@ -74,7 +76,7 @@ def expnegm(
     num_samples: int = 10000,
     dt: float = 1.0,
     burnin: int = 0,
-    seed: int = 0,
+    key: Array = None,
     alpha: float = 0.0,
 ) -> Array:
     """
@@ -87,17 +89,18 @@ def expnegm(
         - num_samples: float, number of samples to be collected.
         - dt: float, time step.
         - burnin: burn-in, steps before which samples are not collected.
-        - seed: random seed
+        - key: JAX random key
         - alpha: float, regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
 
     Returns:
         - approximate negative matrix exponential, exp(-A).
     """
+    if key is None:
+        key = jax.random.PRNGKey(0)
+
     A_shifted = (A + alpha * jnp.eye(A.shape[0])) / dt
     B = A_shifted + A_shifted.T
-
-    key = jax.random.PRNGKey(seed)
 
     ts = jnp.arange(burnin, burnin + num_samples) * dt
     b = jnp.zeros(A.shape[0])
@@ -111,7 +114,7 @@ def expm(
     num_samples: int = 10000,
     dt: float = 1.0,
     burnin: int = 0,
-    seed: int = 0,
+    key: Array = None,
     alpha: float = 1.0,
 ) -> Array:
     """
@@ -124,14 +127,14 @@ def expm(
         - num_samples: float, number of samples to be collected.
         - dt: float, time step.
         - burnin: burn-in, steps before which samples are not collected.
-        - seed: random seed
+        - key: JAX random key
         - alpha: float, regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
 
     Returns:
         - approximate matrix exponential, exp(A).
     """
-    return expnegm(-A, num_samples, dt, burnin, seed, alpha)
+    return expnegm(-A, num_samples, dt, burnin, key, alpha)
 
 
 def autocovariance(samples: Array) -> Array:
