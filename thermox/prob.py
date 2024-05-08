@@ -15,7 +15,6 @@ def log_prob_identity_diffusion(
     xs: Array,
     A: Array | ProcessedDriftMatrix,
     b: Array,
-    A_spd: bool = False,
 ) -> float:
     """Calculates log probability of samples from the Ornstein-Uhlenbeck process,
     defined as:
@@ -33,17 +32,11 @@ def log_prob_identity_diffusion(
         - xs: initial state of the process.
         - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
         - b: drift displacement vector.
-        - A_spd: if true uses jax.linalg.eigh to calculate eigendecomposition of A.
-            If false uses jax.scipy.linalg.eig.
-            jax.linalg.eigh supports gradients but assumes A is Hermitian
-            (i.e. real symmetric).
-            See https://github.com/google/jax/issues/2748
-
     Returns:
         - log probability of given xs.
     """
     if isinstance(A, Array):
-        A = preprocess_drift_matrix(A, A_spd)
+        A = preprocess_drift_matrix(A)
 
     def expm_vp(v, dt):
         out = A.eigvecs_inv @ v
@@ -91,7 +84,6 @@ def log_prob(
     A: Array | ProcessedDriftMatrix,
     b: Array,
     D: Array | ProcessedDiffusionMatrix,
-    A_spd: bool = False,
 ) -> Array:
     """Calculates log probability of samples from the Ornstein-Uhlenbeck process,
     defined as:
@@ -110,11 +102,6 @@ def log_prob(
         - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
         - b: drift displacement vector.
         - D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
-        - A_spd: if true uses jax.linalg.eigh to calculate eigendecomposition of A.
-            If false uses jax.scipy.linalg.eig.
-            jax.linalg.eigh supports gradients but assumes A is Hermitian
-            (i.e. real symmetric).
-            See https://github.com/google/jax/issues/2748
 
     Returns:
         - log probability of given xs.
@@ -124,7 +111,7 @@ def log_prob(
             A = A.val
         if isinstance(D, ProcessedDiffusionMatrix):
             D = D.val
-        A_y, D = preprocess(A, D, A_spd=A_spd)
+        A_y, D = preprocess(A, D)
 
     ys = vmap(jnp.matmul, in_axes=(None, 0))(D.sqrt_inv, xs)
     b_y = D.sqrt_inv @ b

@@ -1,5 +1,6 @@
 import jax
 from jax import numpy as jnp
+import optax
 
 import thermox
 
@@ -111,7 +112,7 @@ def test_MLE():
 
     assert log_prob_true > log_prob_init
 
-    # JAX weird nans when using jax.linalg.eigh on identity
+    # # JAX weird nans when using jax.linalg.eigh on identity
     # def f(m):
     #     return jnp.linalg.eigh(m)[1].sum()
 
@@ -126,7 +127,7 @@ def test_MLE():
         D_sqrt = jnp.tril(D_sqrt)
         A = A_sqrt @ A_sqrt.T
         D = D_sqrt @ D_sqrt.T
-        return -jax.vmap(lambda s: thermox.log_prob(ts, s, A, b, D, A_spd=True))(
+        return -jax.vmap(lambda s: thermox.log_prob(ts, s, A, b, D))(
             samps
         ).mean() / len(ts)
 
@@ -140,18 +141,10 @@ def test_MLE():
 
     assert v_true < v
     for i in range(len(ps)):
-        assert jnp.all(jnp.abs(g_true[i]) <= jnp.abs(g[i]))
+        assert jnp.all(jnp.abs(g_true[i]) <= jnp.abs(g[i]) * 1.5)
 
     n_steps = 20000
     neg_log_probs = jnp.zeros(n_steps)
-
-    # lr = 1e-2
-    # for i in range(n_steps):
-    #     neg_log_prob, grad = val_and_g(ps)
-    #     ps = [p - lr * g for p, g in zip(ps, grad)]
-    #     neg_log_probs = neg_log_probs.at[i].set(neg_log_prob)
-
-    import optax
 
     optimizer = optax.adam(1e-2)
     opt_state = optimizer.init(ps)

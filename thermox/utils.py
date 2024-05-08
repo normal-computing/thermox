@@ -1,6 +1,9 @@
 from typing import NamedTuple, Tuple
 from jax import numpy as jnp
 from jax import Array
+from fmmax.utils import (
+    eig,
+)  # differentiable and jit-able eigendecomposition, not yet available in jax, see https://github.com/google/jax/issues/2748
 
 
 class ProcessedDriftMatrix(NamedTuple):
@@ -14,24 +17,20 @@ class ProcessedDriftMatrix(NamedTuple):
     sym_eigvecs: Array
 
 
-def preprocess_drift_matrix(A: Array, A_spd: bool = False) -> ProcessedDriftMatrix:
+def preprocess_drift_matrix(A: Array) -> ProcessedDriftMatrix:
     """Preprocesses matrix A (calculates eigendecompositions of A and (A+A^T)/2)
 
     Args:
         - A: drift matrix.
-        - A_spd: if true uses jax.linalg.eigh to calculate eigendecomposition of A.
-            If false uses jax.scipy.linalg.eig.
-            jax.linalg.eigh supports gradients but assumes A is Hermitian
-            (i.e. real symmetric).
-            See https://github.com/google/jax/issues/2748
 
     Returns:
         ProcessedDriftMatrix containing eigendeomcomposition of A and (A+A^T)/2.
     """
-    if A_spd:
-        A_eigvals, A_eigvecs = jnp.linalg.eigh(A)
-    else:
-        A_eigvals, A_eigvecs = jnp.linalg.eig(A)
+
+    A_eigvals, A_eigvecs = eig(A + 0.0j)
+
+    A_eigvals = A_eigvals.real
+    A_eigvecs = A_eigvecs.real
 
     A_eigvecs_inv = jnp.linalg.inv(A_eigvecs)
 
@@ -71,27 +70,22 @@ def preprocess_diffusion_matrix(D: Array) -> ProcessedDiffusionMatrix:
 
 
 def preprocess(
-    A: Array, D: Array, A_spd: bool = False
+    A: Array, D: Array
 ) -> Tuple[ProcessedDriftMatrix, ProcessedDiffusionMatrix]:
-    """Transforms the drift matrix A to A_y = D^0.5 @ A @ D^-0.5 for diffusion matrix D
+    """Transforms the drift matrix A to A_y = D^-0.5 @ A @ D^0.5 for diffusion matrix D
     and preprocesses (calculates eigendecompositions (A_y+A_y^T)/2 as well as
     D^0.5 and D^-0.5)
 
     Args:
         - A: drift matrix.
         - D: diffusion matrix.
-        - A_spd: if true uses jax.linalg.eigh to calculate eigendecomposition of A.
-            If false uses jax.scipy.linalg.eig.
-            jax.linalg.eigh supports gradients but assumes A is Hermitian
-            (i.e. real symmetric).
-            See https://github.com/google/jax/issues/2748
 
     Returns:
         ProcessedDriftMatrix containing eigendecomposition of A_y and (A_y+A_y^T)/2.
-            where A_y = D^0.5 @ A @ D^-0.5
+            where A_y = D^-0.5 @ A @ D^0.5
         ProcessedDiffusionMatrix containing D^0.5 and D^-0.5.
     """
     PD = preprocess_diffusion_matrix(D)
     A_y = PD.sqrt_inv @ A @ PD.sqrt
-    PA_y = preprocess_drift_matrix(A_y, A_spd)
+    PA_y = preprocess_drift_matrix(A_y)
     return PA_y, PD

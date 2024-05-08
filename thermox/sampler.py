@@ -17,7 +17,6 @@ def sample_identity_diffusion(
     x0: Array,
     A: Array | ProcessedDriftMatrix,
     b: Array,
-    A_spd: bool = False,
 ) -> Array:
     """Collects samples from the Ornstein-Uhlenbeck process, defined as:
 
@@ -34,11 +33,6 @@ def sample_identity_diffusion(
         - x0: initial state of the process.
         - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
         - b: drift displacement vector.
-        - A_spd: if true uses jax.linalg.eigh to calculate eigendecomposition of A.
-            If false uses jax.scipy.linalg.eig.
-            jax.linalg.eigh supports gradients but assumes A is Hermitian
-            (i.e. real symmetric).
-            See https://github.com/google/jax/issues/2748
 
     Returns:
         - samples: array-like, desired samples.
@@ -46,7 +40,7 @@ def sample_identity_diffusion(
     """
 
     if isinstance(A, Array):
-        A = preprocess_drift_matrix(A, A_spd)
+        A = preprocess_drift_matrix(A)
 
     def expm_vp(v, dt):
         out = A.eigvecs_inv @ v
@@ -87,7 +81,6 @@ def sample(
     A: Array | ProcessedDriftMatrix,
     b: Array,
     D: Array | ProcessedDiffusionMatrix,
-    A_spd: bool = False,
 ) -> Array:
     """Collects samples from the Ornstein-Uhlenbeck process, defined as:
 
@@ -105,18 +98,13 @@ def sample(
         - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
         - b: drift displacement vector.
         - D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
-        - A_spd: if true uses jax.linalg.eigh to calculate eigendecomposition of A.
-            If false uses jax.scipy.linalg.eig.
-            jax.linalg.eigh supports gradients but assumes A is Hermitian
-            (i.e. real symmetric).
-            See https://github.com/google/jax/issues/2748
 
     Returns:
         - samples: array-like, desired samples.
             shape: (len(ts), ) + x0.shape
     """
     if isinstance(A, Array) and isinstance(D, Array):
-        A_y, D = preprocess(A, D, A_spd)
+        A_y, D = preprocess(A, D)
 
     assert isinstance(A_y, ProcessedDriftMatrix)
     assert isinstance(D, ProcessedDiffusionMatrix)
