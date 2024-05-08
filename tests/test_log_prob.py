@@ -112,14 +112,6 @@ def test_MLE():
 
     assert log_prob_true > log_prob_init
 
-    # # JAX weird nans when using jax.linalg.eigh on identity
-    # def f(m):
-    #     return jnp.linalg.eigh(m)[1].sum()
-
-    # id_mat = jnp.eye(3)
-    # print(jax.value_and_grad(f)(id_mat))
-    # print(jax.value_and_grad(f)(id_mat + 1e-7))
-
     # Gradient descent
     def loss(params):
         A_sqrt, b, D_sqrt = params
