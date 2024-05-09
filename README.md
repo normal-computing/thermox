@@ -71,7 +71,7 @@ plt.show()
 ```
 
 <p align="center">
-  <img src="https://storage.googleapis.com/normal-blog-artifacts/thermo-playground/ou_trajectories.png" width="600" lineheight = -10%/>
+  <img src="https://storage.googleapis.com/normal-blog-artifacts/thermox/ou_trajectories.png" width="800" lineheight = -10%/>
   <br>
 </p>
 
