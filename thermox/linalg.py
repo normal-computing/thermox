@@ -30,7 +30,7 @@ def solve(
         key: JAX random key
 
     Returns:
-        approximate solution, x, of the linear system.
+        Approximate solution, x, of the linear system.
     """
     if key is None:
         key = jax.random.PRNGKey(0)
@@ -60,7 +60,7 @@ def inv(
         key: JAX random key
 
     Returns:
-        - approximate inverse of A.
+        Approximate inverse of A.
     """
     if key is None:
         key = jax.random.PRNGKey(0)
@@ -94,7 +94,7 @@ def expnegm(
             is symmetric positive definite.
 
     Returns:
-        approximate negative matrix exponential, exp(-A).
+        Approximate negative matrix exponential, exp(-A).
     """
     if key is None:
         key = jax.random.PRNGKey(0)
@@ -145,7 +145,7 @@ def autocovariance(samples: Array) -> Array:
         samples: array-like, samples from a stochastic process.
 
     Returns:
-        autocovariance of the samples.
+        Autocovariance of the samples.
     """
     return fori_loop(
         0,

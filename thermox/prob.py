@@ -104,7 +104,7 @@ def log_prob(
         D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 
     Returns:
-        log probability of given xs.
+        Scalar log probability of given xs.
     """
     if isinstance(A, Array) or isinstance(D, Array):
         if isinstance(A, ProcessedDriftMatrix):
