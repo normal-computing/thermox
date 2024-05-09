@@ -35,7 +35,7 @@ def sample_identity_diffusion(
         b: drift displacement vector.
 
     Returns:
-        samples: array-like, desired samples.
+        Array-like, desired samples.
             shape: (len(ts), ) + x0.shape
     """
 
