@@ -21,7 +21,7 @@ def preprocess_drift_matrix(A: Array) -> ProcessedDriftMatrix:
     """Preprocesses matrix A (calculates eigendecompositions of A and (A+A^T)/2)
 
     Args:
-        - A: drift matrix.
+        A: drift matrix.
 
     Returns:
         ProcessedDriftMatrix containing eigendeomcomposition of A and (A+A^T)/2.
@@ -59,7 +59,7 @@ def preprocess_diffusion_matrix(D: Array) -> ProcessedDiffusionMatrix:
     """Preprocesses diffusion matrix D (calculates D^0.5 and D^-0.5 via Cholesky)
 
     Args:
-        - D: diffusion matrix.
+        D: diffusion matrix.
 
     Returns:
         ProcessedDiffusionMatrix containing D^0.5 and D^-0.5.
@@ -77,8 +77,8 @@ def preprocess(
     D^0.5 and D^-0.5)
 
     Args:
-        - A: drift matrix.
-        - D: diffusion matrix.
+        A: drift matrix.
+        D: diffusion matrix.
 
     Returns:
         ProcessedDriftMatrix containing eigendecomposition of A_y and (A_y+A_y^T)/2.

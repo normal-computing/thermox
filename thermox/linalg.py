@@ -22,15 +22,15 @@ def solve(
     process and calculating the mean over the samples.
 
     Args:
-        - A: Linear system matrix.
-        - b: Linear system vector.
-        - num_samples: float, number of samples to be collected.
-        - dt: float, time step.
-        - burnin: burn-in, steps before which samples are not collected.
-        - key: JAX random key
+        A: Linear system matrix.
+        b: Linear system vector.
+        num_samples: float, number of samples to be collected.
+        dt: float, time step.
+        burnin: burn-in, steps before which samples are not collected.
+        key: JAX random key
 
     Returns:
-        - approximate solution, x, of the linear system.
+        Approximate solution, x, of the linear system.
     """
     if key is None:
         key = jax.random.PRNGKey(0)
@@ -53,14 +53,14 @@ def inv(
     process and calculating the covariance of the samples.
 
     Args:
-        - A: Matrix to invert (must be symmetric positive definite).
-        - num_samples: float, number of samples to be collected.
-        - dt: float, time step.
-        - burnin: burn-in, steps before which samples are not collected.
-        - key: JAX random key
+        A: Matrix to invert (must be symmetric positive definite).
+        num_samples: float, number of samples to be collected.
+        dt: float, time step.
+        burnin: burn-in, steps before which samples are not collected.
+        key: JAX random key
 
     Returns:
-        - approximate inverse of A.
+        Approximate inverse of A.
     """
     if key is None:
         key = jax.random.PRNGKey(0)
@@ -85,16 +85,16 @@ def expnegm(
     process and calculating the covariance of the samples.
 
     Args:
-        - A: drift matrix.
-        - num_samples: float, number of samples to be collected.
-        - dt: float, time step.
-        - burnin: burn-in, steps before which samples are not collected.
-        - key: JAX random key
-        - alpha: float, regularization parameter to ensure diffusion matrix
+        A: drift matrix.
+        num_samples: float, number of samples to be collected.
+        dt: float, time step.
+        burnin: burn-in, steps before which samples are not collected.
+        key: JAX random key
+        alpha: float, regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
 
     Returns:
-        - approximate negative matrix exponential, exp(-A).
+        Approximate negative matrix exponential, exp(-A).
     """
     if key is None:
         key = jax.random.PRNGKey(0)
@@ -123,16 +123,16 @@ def expm(
     process and calculating the covariance of the samples.
 
     Args:
-        - A: drift matrix.
-        - num_samples: float, number of samples to be collected.
-        - dt: float, time step.
-        - burnin: burn-in, steps before which samples are not collected.
-        - key: JAX random key
-        - alpha: float, regularization parameter to ensure diffusion matrix
+        A: drift matrix.
+        num_samples: float, number of samples to be collected.
+        dt: float, time step.
+        burnin: burn-in, steps before which samples are not collected.
+        key: JAX random key
+        alpha: float, regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
 
     Returns:
-        - approximate matrix exponential, exp(A).
+        approximate matrix exponential, exp(A).
     """
     return expnegm(-A, num_samples, dt, burnin, key, alpha)
 
@@ -142,10 +142,10 @@ def autocovariance(samples: Array) -> Array:
     Calculate the autocovariance of a set of samples.
 
     Args:
-        - samples: array-like, samples from a stochastic process.
+        samples: array-like, samples from a stochastic process.
 
     Returns:
-        - autocovariance of the samples.
+        Autocovariance of the samples.
     """
     return fori_loop(
         0,

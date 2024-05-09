@@ -28,14 +28,14 @@ def sample_identity_diffusion(
     where T=len(ts).
 
     Args:
-        - key: jax PRNGKey.
-        - ts: array-like, times at which samples are collected. Includes time for x0.
-        - x0: initial state of the process.
-        - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
-        - b: drift displacement vector.
+        key: jax PRNGKey.
+        ts: array-like, times at which samples are collected. Includes time for x0.
+        x0: initial state of the process.
+        A: drift matrix (Array or thermox.ProcessedDriftMatrix).
+        b: drift displacement vector.
 
     Returns:
-        - samples: array-like, desired samples.
+        Array-like, desired samples.
             shape: (len(ts), ) + x0.shape
     """
 
@@ -92,15 +92,15 @@ def sample(
     where T=len(ts).
 
     Args:
-        - key: jax PRNGKey.
-        - ts: array-like, times at which samples are collected. Includes time for x0.
-        - x0: initial state of the process.
-        - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
-        - b: drift displacement vector.
-        - D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
+        key: jax PRNGKey.
+        ts: array-like, times at which samples are collected. Includes time for x0.
+        x0: initial state of the process.
+        A: drift matrix (Array or thermox.ProcessedDriftMatrix).
+        b: drift displacement vector.
+        D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 
     Returns:
-        - samples: array-like, desired samples.
+        Array-like, desired samples.
             shape: (len(ts), ) + x0.shape
     """
     if isinstance(A, Array) and isinstance(D, Array):

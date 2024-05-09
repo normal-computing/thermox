@@ -28,12 +28,12 @@ def log_prob_identity_diffusion(
     Preprocessing (diagonalisation) costs O(d^3) and evaluation then costs O(T * d^2).
 
     Args:
-        - ts: array-like, times at which samples are collected. Includes time for x0.
-        - xs: initial state of the process.
-        - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
-        - b: drift displacement vector.
+        ts: array-like, times at which samples are collected. Includes time for x0.
+        xs: initial state of the process.
+        A: drift matrix (Array or thermox.ProcessedDriftMatrix).
+        b: drift displacement vector.
     Returns:
-        - log probability of given xs.
+        Scalar log probability of given xs.
     """
     if isinstance(A, Array):
         A = preprocess_drift_matrix(A)
@@ -97,14 +97,14 @@ def log_prob(
     Preprocessing (diagonalisation) costs O(d^3) and evaluation then costs O(T * d^2).
 
     Args:
-        - ts: array-like, times at which samples are collected. Includes time for x0.
-        - xs: initial state of the process.
-        - A: drift matrix (Array or thermox.ProcessedDriftMatrix).
-        - b: drift displacement vector.
-        - D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
+        ts: array-like, times at which samples are collected. Includes time for x0.
+        xs: initial state of the process.
+        A: drift matrix (Array or thermox.ProcessedDriftMatrix).
+        b: drift displacement vector.
+        D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 
     Returns:
-        - log probability of given xs.
+        Scalar log probability of given xs.
     """
     if isinstance(A, Array) or isinstance(D, Array):
         if isinstance(A, ProcessedDriftMatrix):
