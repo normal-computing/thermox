@@ -33,7 +33,7 @@ def log_prob_identity_diffusion(
         A: drift matrix (Array or thermox.ProcessedDriftMatrix).
         b: drift displacement vector.
     Returns:
-        log probability of given xs.
+        Scalar log probability of given xs.
     """
     if isinstance(A, Array):
         A = preprocess_drift_matrix(A)
