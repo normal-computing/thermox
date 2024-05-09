@@ -100,7 +100,7 @@ def sample(
         D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 
     Returns:
-        samples: array-like, desired samples.
+        Array-like, desired samples.
             shape: (len(ts), ) + x0.shape
     """
     if isinstance(A, Array) and isinstance(D, Array):
