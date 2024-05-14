@@ -103,11 +103,12 @@ def sample(
         Array-like, desired samples.
             shape: (len(ts), ) + x0.shape
     """
-    if isinstance(A, Array) and isinstance(D, Array):
+    if isinstance(A, Array) or isinstance(D, Array):
+        if isinstance(A, ProcessedDriftMatrix):
+            A = A.val
+        if isinstance(D, ProcessedDiffusionMatrix):
+            D = D.val
         A_y, D = preprocess(A, D)
-
-    assert isinstance(A_y, ProcessedDriftMatrix)
-    assert isinstance(D, ProcessedDiffusionMatrix)
 
     y0 = D.sqrt_inv @ x0
     b_y = D.sqrt_inv @ b
