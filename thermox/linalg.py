@@ -24,10 +24,10 @@ def solve(
     Args:
         A: Linear system matrix.
         b: Linear system vector.
-        num_samples: integer, number of samples to be collected.
-        dt: float, time step.
-        burnin: integer, time-step index corresponding to the end of the burn-in period.
-            Steps before this are not collected.
+        num_samples: Number of samples to be collected.
+        dt: Time step.
+        burnin: Time-step index corresponding to the end of the burn-in period.
+            Samples before this step are not collected.
         key: JAX random key
 
     Returns:
@@ -55,10 +55,10 @@ def inv(
 
     Args:
         A: Matrix to invert (must be symmetric positive definite).
-        num_samples: integer, number of samples to be collected.
-        dt: float, time step.
-        burnin: integer, time-step index corresponding to the end of the burn-in period.
-            Steps before this are not collected.
+        num_samples: Number of samples to be collected.
+        dt: Time step.
+        burnin: Time-step index corresponding to the end of the burn-in period.
+            Samples before this step are not collected.
         key: JAX random key
 
     Returns:
@@ -87,13 +87,13 @@ def expnegm(
     process and calculating the covariance of the samples.
 
     Args:
-        A: drift matrix.
-        num_samples: integer, number of samples to be collected.
-        dt: float, time step.
-        burnin: integer, time-step index corresponding to the end of the burn-in period.
-            Steps before this are not collected.
+        A: Drift matrix.
+        num_samples: Number of samples to be collected.
+        dt: Time step.
+        burnin: Time-step index corresponding to the end of the burn-in period.
+            Samples before this step are not collected.
         key: JAX random key
-        alpha: float, regularization parameter to ensure diffusion matrix
+        alpha: Regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
 
     Returns:
@@ -126,11 +126,11 @@ def expm(
     process and calculating the covariance of the samples.
 
     Args:
-        A: drift matrix.
-        num_samples: integer, number of samples to be collected.
-        dt: float, time step.
-        burnin: integer, time-step index corresponding to the end of the burn-in period.
-            Steps before this are not collected.
+        A: Drift matrix.
+        num_samples: Number of samples to be collected.
+        dt: Time step.
+        burnin: Time-step index corresponding to the end of the burn-in period.
+            Samples before this step are not collected.
         key: JAX random key
         alpha: float, regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
