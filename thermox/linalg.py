@@ -24,9 +24,10 @@ def solve(
     Args:
         A: Linear system matrix.
         b: Linear system vector.
-        num_samples: float, number of samples to be collected.
+        num_samples: integer, number of samples to be collected.
         dt: float, time step.
-        burnin: burn-in, steps before which samples are not collected.
+        burnin: integer, time-step index corresponding to the end of the burn-in period.
+            Steps before this are not collected.
         key: JAX random key
 
     Returns:
@@ -54,9 +55,10 @@ def inv(
 
     Args:
         A: Matrix to invert (must be symmetric positive definite).
-        num_samples: float, number of samples to be collected.
+        num_samples: integer, number of samples to be collected.
         dt: float, time step.
-        burnin: burn-in, steps before which samples are not collected.
+        burnin: integer, time-step index corresponding to the end of the burn-in period.
+            Steps before this are not collected.
         key: JAX random key
 
     Returns:
@@ -86,9 +88,10 @@ def expnegm(
 
     Args:
         A: drift matrix.
-        num_samples: float, number of samples to be collected.
+        num_samples: integer, number of samples to be collected.
         dt: float, time step.
-        burnin: burn-in, steps before which samples are not collected.
+        burnin: integer, time-step index corresponding to the end of the burn-in period.
+            Steps before this are not collected.
         key: JAX random key
         alpha: float, regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
@@ -124,9 +127,10 @@ def expm(
 
     Args:
         A: drift matrix.
-        num_samples: float, number of samples to be collected.
+        num_samples: integer, number of samples to be collected.
         dt: float, time step.
-        burnin: burn-in, steps before which samples are not collected.
+        burnin: integer, time-step index corresponding to the end of the burn-in period.
+            Steps before this are not collected.
         key: JAX random key
         alpha: float, regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
