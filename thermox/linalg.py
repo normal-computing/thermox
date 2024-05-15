@@ -24,9 +24,10 @@ def solve(
     Args:
         A: Linear system matrix.
         b: Linear system vector.
-        num_samples: float, number of samples to be collected.
-        dt: float, time step.
-        burnin: burn-in, steps before which samples are not collected.
+        num_samples: Number of samples to be collected.
+        dt: Time step.
+        burnin: Time-step index corresponding to the end of the burn-in period.
+            Samples before this step are not collected.
         key: JAX random key
 
     Returns:
@@ -54,9 +55,10 @@ def inv(
 
     Args:
         A: Matrix to invert (must be symmetric positive definite).
-        num_samples: float, number of samples to be collected.
-        dt: float, time step.
-        burnin: burn-in, steps before which samples are not collected.
+        num_samples: Number of samples to be collected.
+        dt: Time step.
+        burnin: Time-step index corresponding to the end of the burn-in period.
+            Samples before this step are not collected.
         key: JAX random key
 
     Returns:
@@ -85,12 +87,13 @@ def expnegm(
     process and calculating the covariance of the samples.
 
     Args:
-        A: drift matrix.
-        num_samples: float, number of samples to be collected.
-        dt: float, time step.
-        burnin: burn-in, steps before which samples are not collected.
+        A: Matrix to exponentiate.
+        num_samples: Number of samples to be collected.
+        dt: Time step.
+        burnin: Time-step index corresponding to the end of the burn-in period.
+            Samples before this step are not collected.
         key: JAX random key
-        alpha: float, regularization parameter to ensure diffusion matrix
+        alpha: Regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
 
     Returns:
@@ -123,16 +126,17 @@ def expm(
     process and calculating the covariance of the samples.
 
     Args:
-        A: drift matrix.
-        num_samples: float, number of samples to be collected.
-        dt: float, time step.
-        burnin: burn-in, steps before which samples are not collected.
+        A: Matrix to exponentiate.
+        num_samples: Number of samples to be collected.
+        dt: Time step.
+        burnin: Time-step index corresponding to the end of the burn-in period.
+            Samples before this step are not collected.
         key: JAX random key
-        alpha: float, regularization parameter to ensure diffusion matrix
+        alpha: Regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
 
     Returns:
-        approximate matrix exponential, exp(A).
+        Approximate matrix exponential, exp(A).
     """
     return expnegm(-A, num_samples, dt, burnin, key, alpha)
 
@@ -142,7 +146,7 @@ def autocovariance(samples: Array) -> Array:
     Calculate the autocovariance of a set of samples.
 
     Args:
-        samples: array-like, samples from a stochastic process.
+        samples: Samples from a stochastic process, as an array of shape (num_samples, dimension).
 
     Returns:
         Autocovariance of the samples.
