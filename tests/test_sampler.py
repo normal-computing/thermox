@@ -6,7 +6,7 @@ import thermox
 
 def test_sample_array_input():
     key = jax.random.PRNGKey(0)
-    dim = 3
+    dim = 2
     dt = 0.1
     ts = jnp.arange(0, 10_000, dt)
 
@@ -24,7 +24,7 @@ def test_sample_array_input():
 
 def test_sample_processed_input():
     key = jax.random.PRNGKey(0)
-    dim = 3
+    dim = 2
     dt = 0.1
     ts = jnp.arange(0, 10_000, dt)
 
@@ -32,9 +32,49 @@ def test_sample_processed_input():
     b, x0 = jnp.zeros(dim), jnp.zeros(dim)
     D = 2 * jnp.eye(dim)
 
-    A, D = thermox.utils.preprocess(A, D)
+    A_proc, D_proc = thermox.utils.preprocess(A, D)
 
-    samples = thermox.sample(key, ts, x0, A, b, D)
+    samples = thermox.sample(key, ts, x0, A_proc, b, D_proc)
+
+    samp_cov = jnp.cov(samples.T)
+    samp_mean = jnp.mean(samples.T, axis=1)
+    assert jnp.allclose(A @ samp_cov, jnp.eye(2), atol=1e-1)
+    assert jnp.allclose(samp_mean, b, atol=1e-1)
+
+
+def test_sample_processed_drift_array_diffusion_input():
+    key = jax.random.PRNGKey(0)
+    dim = 2
+    dt = 0.1
+    ts = jnp.arange(0, 10_000, dt)
+
+    A = jnp.array([[3, 2], [2, 4.0]])
+    b, x0 = jnp.zeros(dim), jnp.zeros(dim)
+    D = 2 * jnp.eye(dim)
+
+    A_proc, D_proc = thermox.utils.preprocess(A, D)
+
+    samples = thermox.sample(key, ts, x0, A_proc, b, D)
+
+    samp_cov = jnp.cov(samples.T)
+    samp_mean = jnp.mean(samples.T, axis=1)
+    assert jnp.allclose(A @ samp_cov, jnp.eye(2), atol=1e-1)
+    assert jnp.allclose(samp_mean, b, atol=1e-1)
+
+
+def test_sample_array_drift_processed_diffusion_input():
+    key = jax.random.PRNGKey(0)
+    dim = 2
+    dt = 0.1
+    ts = jnp.arange(0, 10_000, dt)
+
+    A = jnp.array([[3, 2], [2, 4.0]])
+    b, x0 = jnp.zeros(dim), jnp.zeros(dim)
+    D = 2 * jnp.eye(dim)
+
+    A_proc, D_proc = thermox.utils.preprocess(A, D)
+
+    samples = thermox.sample(key, ts, x0, A, b, D_proc)
 
     samp_cov = jnp.cov(samples.T)
     samp_mean = jnp.mean(samples.T, axis=1)
