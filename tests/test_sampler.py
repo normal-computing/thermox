@@ -21,6 +21,7 @@ def test_sample_array_input():
     assert jnp.allclose(A @ samp_cov, jnp.eye(2), atol=1e-1)
     assert jnp.allclose(samp_mean, b, atol=1e-1)
 
+
 def test_sample_processed_input():
     key = jax.random.PRNGKey(0)
     dim = 3
