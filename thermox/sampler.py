@@ -109,6 +109,8 @@ def sample(
         if isinstance(D, ProcessedDiffusionMatrix):
             D = D.val
         A_y, D = preprocess(A, D)
+    else:
+        A_y = A
 
     y0 = D.sqrt_inv @ x0
     b_y = D.sqrt_inv @ b
