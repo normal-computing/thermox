@@ -4,7 +4,7 @@ from jax.lax import scan
 from jax import Array
 
 from thermox.utils import (
-    preprocess,
+    handle_matrix_inputs,
     preprocess_drift_matrix,
     ProcessedDriftMatrix,
     ProcessedDiffusionMatrix,
@@ -28,11 +28,11 @@ def sample_identity_diffusion(
     where T=len(ts).
 
     Args:
-        key: jax PRNGKey.
-        ts: array-like, times at which samples are collected. Includes time for x0.
-        x0: initial state of the process.
-        A: drift matrix (Array or thermox.ProcessedDriftMatrix).
-        b: drift displacement vector.
+        key: Jax PRNGKey.
+        ts: Times at which samples are collected. Includes time for x0.
+        x0: Initial state of the process.
+        A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
+        b: Drift displacement vector.
 
     Returns:
         Array-like, desired samples.
@@ -92,25 +92,21 @@ def sample(
     where T=len(ts).
 
     Args:
-        key: jax PRNGKey.
-        ts: array-like, times at which samples are collected. Includes time for x0.
-        x0: initial state of the process.
-        A: drift matrix (Array or thermox.ProcessedDriftMatrix).
-        b: drift displacement vector.
-        D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
+        key: Jax PRNGKey.
+        ts: Times at which samples are collected. Includes time for x0.
+        x0: Initial state of the process.
+        A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
+            Note : If a thermox.ProcessedDriftMatrix instance is used as input,
+            must be transformed drift matrix, A_y, given by thermox.preprocess,
+            not thermox.preprocess_drift_matrix.
+        b: Drift displacement vector.
+        D: Diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 
     Returns:
         Array-like, desired samples.
             shape: (len(ts), ) + x0.shape
     """
-    if isinstance(A, Array) or isinstance(D, Array):
-        if isinstance(A, ProcessedDriftMatrix):
-            A = A.val
-        if isinstance(D, ProcessedDiffusionMatrix):
-            D = D.val
-        A_y, D = preprocess(A, D)
-    else:
-        A_y = A
+    A_y, D = handle_matrix_inputs(A, D)
 
     y0 = D.sqrt_inv @ x0
     b_y = D.sqrt_inv @ b

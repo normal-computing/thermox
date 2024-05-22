@@ -21,7 +21,7 @@ def preprocess_drift_matrix(A: Array) -> ProcessedDriftMatrix:
     """Preprocesses matrix A (calculates eigendecompositions of A and (A+A^T)/2)
 
     Args:
-        A: drift matrix.
+        A: Drift matrix.
 
     Returns:
         ProcessedDriftMatrix containing eigendeomcomposition of A and (A+A^T)/2.
@@ -59,7 +59,7 @@ def preprocess_diffusion_matrix(D: Array) -> ProcessedDiffusionMatrix:
     """Preprocesses diffusion matrix D (calculates D^0.5 and D^-0.5 via Cholesky)
 
     Args:
-        D: diffusion matrix.
+        D: Diffusion matrix.
 
     Returns:
         ProcessedDiffusionMatrix containing D^0.5 and D^-0.5.
@@ -77,8 +77,8 @@ def preprocess(
     D^0.5 and D^-0.5)
 
     Args:
-        A: drift matrix.
-        D: diffusion matrix.
+        A: Drift matrix.
+        D: Diffusion matrix.
 
     Returns:
         ProcessedDriftMatrix containing eigendecomposition of A_y and (A_y+A_y^T)/2.
@@ -89,3 +89,28 @@ def preprocess(
     A_y = PD.sqrt_inv @ A @ PD.sqrt
     PA_y = preprocess_drift_matrix(A_y)
     return PA_y, PD
+
+
+def handle_matrix_inputs(
+    A: Array | ProcessedDriftMatrix, D: Array | ProcessedDiffusionMatrix
+) -> Tuple[ProcessedDriftMatrix, ProcessedDiffusionMatrix]:
+    """Checks the type of the input drift matrix, A, and diffusion matrix, D,
+    and ensures that they are processed in the correct way.
+    Helper function for sample and log_prob functions.
+
+    Args:
+        A: Drift matrix.
+        D: Diffusion matrix.
+
+    Returns:
+        ProcessedDriftMatrix containing eigendecomposition of A_y and (A_y+A_y^T)/2.
+            where A_y = D^-0.5 @ A @ D^0.5
+        ProcessedDiffusionMatrix containing D^0.5 and D^-0.5.
+    """
+    if isinstance(A, Array) or isinstance(D, Array):
+        if isinstance(A, ProcessedDriftMatrix):
+            A = A.val
+        if isinstance(D, ProcessedDiffusionMatrix):
+            D = D.val
+        A, D = preprocess(A, D)
+    return A, D

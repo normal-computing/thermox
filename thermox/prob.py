@@ -3,7 +3,7 @@ from jax.lax import fori_loop
 from jax import Array, vmap
 
 from thermox.utils import (
-    preprocess,
+    handle_matrix_inputs,
     preprocess_drift_matrix,
     ProcessedDriftMatrix,
     ProcessedDiffusionMatrix,
@@ -100,18 +100,16 @@ def log_prob(
         ts: array-like, times at which samples are collected. Includes time for x0.
         xs: initial state of the process.
         A: drift matrix (Array or thermox.ProcessedDriftMatrix).
+            Note : If a thermox.ProcessedDriftMatrix instance is used as input,
+            must be transformed drift matrix, A_y, given by thermox.preprocess,
+            not thermox.preprocess_drift_matrix.
         b: drift displacement vector.
         D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 
     Returns:
         Scalar log probability of given xs.
     """
-    if isinstance(A, Array) or isinstance(D, Array):
-        if isinstance(A, ProcessedDriftMatrix):
-            A = A.val
-        if isinstance(D, ProcessedDiffusionMatrix):
-            D = D.val
-        A_y, D = preprocess(A, D)
+    A_y, D = handle_matrix_inputs(A, D)
 
     ys = vmap(jnp.matmul, in_axes=(None, 0))(D.sqrt_inv, xs)
     b_y = D.sqrt_inv @ b
