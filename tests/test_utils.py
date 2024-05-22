@@ -1,4 +1,3 @@
-import jax
 from jax import numpy as jnp
 
 from thermox.utils import (
@@ -6,15 +5,13 @@ from thermox.utils import (
     ProcessedDriftMatrix,
     ProcessedDiffusionMatrix,
     preprocess,
-    preprocess_diffusion_matrix,
-    preprocess_drift_matrix
 )
 
 
 def test_handle_matrix_inputs_arrays():
     A = jnp.array([[1, 3], [1, 4]])
     D = jnp.array([[9, 4], [4, 20]])
-    
+
     a, d = preprocess(A, D)
 
     A_star, D_star = handle_matrix_inputs(A, D)
@@ -27,7 +24,7 @@ def test_handle_matrix_inputs_arrays():
 def test_handle_matrix_inputs_processed():
     A = jnp.array([[1, 3], [1, 4]])
     D = jnp.array([[9, 4], [4, 20]])
-    
+
     a, d = preprocess(A, D)
 
     A_star, D_star = handle_matrix_inputs(a, d)
@@ -40,7 +37,7 @@ def test_handle_matrix_inputs_processed():
 def test_handle_matrix_inputs_array_drift_processed_diffusion():
     A = jnp.array([[1, 3], [1, 4]])
     D = jnp.array([[9, 4], [4, 20]])
-    
+
     a, d = preprocess(A, D)
 
     A_star, D_star = handle_matrix_inputs(A, d)
@@ -53,7 +50,7 @@ def test_handle_matrix_inputs_array_drift_processed_diffusion():
 def test_handle_matrix_inputs_array_diffusion_processed_drift():
     A = jnp.array([[1, 3], [1, 4]])
     D = jnp.array([[9, 4], [4, 20]])
-    
+
     a, d = preprocess(A, D)
 
     A_star, D_star = handle_matrix_inputs(a, D)
