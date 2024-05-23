@@ -14,7 +14,7 @@ def test_handle_matrix_inputs_arrays():
 
     a, d = preprocess(A, D)
 
-    A_star, D_star = handle_matrix_inputs(A, D)
+    A_star, D_star = preprocess(A, D)
 
     assert isinstance(A_star, ProcessedDriftMatrix)
     assert isinstance(D_star, ProcessedDiffusionMatrix)

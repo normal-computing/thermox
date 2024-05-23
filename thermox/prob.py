@@ -107,7 +107,7 @@ def log_prob(
         A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
             Note : If a thermox.ProcessedDriftMatrix instance is used as input,
             must be the transformed drift matrix, A_y, given by thermox.preprocess,
-            not thermox.utils._preprocess_drift_matrix.
+            not thermox.utils.preprocess_drift_matrix.
         b: Drift displacement vector.
         D: Diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 

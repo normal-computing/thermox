@@ -99,8 +99,8 @@ def handle_matrix_inputs(
     Helper function for sample and log_prob functions.
 
     Args:
-        A: Drift matrix.
-        D: Diffusion matrix.
+        A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
+        D: Diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 
     Returns:
         ProcessedDriftMatrix containing eigendecomposition of A_y and (A_y+A_y^T)/2.
