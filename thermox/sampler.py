@@ -88,8 +88,12 @@ def sample(
 
     by using exact diagonalization.
 
-    Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2)
+    Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2),
     where T=len(ts).
+
+    By default, this function does the preprocessing on A and D before the evaluation.
+    However, the preprocessing can be done externally using thermox.preprocess
+    the output of which can be used as A and D here, this will skip the preprocessing.
 
     Args:
         key: Jax PRNGKey.
@@ -97,8 +101,8 @@ def sample(
         x0: Initial state of the process.
         A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
             Note : If a thermox.ProcessedDriftMatrix instance is used as input,
-            must be transformed drift matrix, A_y, given by thermox.preprocess,
-            not thermox.preprocess_drift_matrix.
+            must be the transformed drift matrix, A_y, given by thermox.preprocess,
+            not thermox.utils._preprocess_drift_matrix.
         b: Drift displacement vector.
         D: Diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 
