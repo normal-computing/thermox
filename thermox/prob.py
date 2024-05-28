@@ -3,7 +3,7 @@ from jax.lax import fori_loop
 from jax import Array, vmap
 
 from thermox.utils import (
-    preprocess,
+    handle_matrix_inputs,
     preprocess_drift_matrix,
     ProcessedDriftMatrix,
     ProcessedDiffusionMatrix,
@@ -28,10 +28,10 @@ def log_prob_identity_diffusion(
     Preprocessing (diagonalisation) costs O(d^3) and evaluation then costs O(T * d^2).
 
     Args:
-        ts: array-like, times at which samples are collected. Includes time for x0.
-        xs: initial state of the process.
-        A: drift matrix (Array or thermox.ProcessedDriftMatrix).
-        b: drift displacement vector.
+        ts: Times at which samples are collected. Includes time for x0.
+        xs: Initial state of the process.
+        A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
+        b: Drift displacement vector.
     Returns:
         Scalar log probability of given xs.
     """
@@ -94,24 +94,27 @@ def log_prob(
 
     Assumes x(t_0) is given deterministically.
 
-    Preprocessing (diagonalisation) costs O(d^3) and evaluation then costs O(T * d^2).
+    Preprocessing (diagonalisation) costs O(d^3) and evaluation then costs O(T * d^2),
+    where T=len(ts).
+
+    By default, this function does the preprocessing on A and D before the evaluation.
+    However, the preprocessing can be done externally using thermox.preprocess
+    the output of which can be used as A and D here, this will skip the preprocessing.
 
     Args:
-        ts: array-like, times at which samples are collected. Includes time for x0.
-        xs: initial state of the process.
-        A: drift matrix (Array or thermox.ProcessedDriftMatrix).
-        b: drift displacement vector.
-        D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
+        ts: Times at which samples are collected. Includes time for x0.
+        xs: Initial state of the process.
+        A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
+            Note : If a thermox.ProcessedDriftMatrix instance is used as input,
+            must be the transformed drift matrix, A_y, given by thermox.preprocess,
+            not thermox.utils.preprocess_drift_matrix.
+        b: Drift displacement vector.
+        D: Diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 
     Returns:
         Scalar log probability of given xs.
     """
-    if isinstance(A, Array) or isinstance(D, Array):
-        if isinstance(A, ProcessedDriftMatrix):
-            A = A.val
-        if isinstance(D, ProcessedDiffusionMatrix):
-            D = D.val
-        A_y, D = preprocess(A, D)
+    A_y, D = handle_matrix_inputs(A, D)
 
     ys = vmap(jnp.matmul, in_axes=(None, 0))(D.sqrt_inv, xs)
     b_y = D.sqrt_inv @ b

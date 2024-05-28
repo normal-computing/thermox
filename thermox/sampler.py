@@ -4,7 +4,7 @@ from jax.lax import scan
 from jax import Array
 
 from thermox.utils import (
-    preprocess,
+    handle_matrix_inputs,
     preprocess_drift_matrix,
     ProcessedDriftMatrix,
     ProcessedDiffusionMatrix,
@@ -28,11 +28,11 @@ def sample_identity_diffusion(
     where T=len(ts).
 
     Args:
-        key: jax PRNGKey.
-        ts: array-like, times at which samples are collected. Includes time for x0.
-        x0: initial state of the process.
-        A: drift matrix (Array or thermox.ProcessedDriftMatrix).
-        b: drift displacement vector.
+        key: Jax PRNGKey.
+        ts: Times at which samples are collected. Includes time for x0.
+        x0: Initial state of the process.
+        A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
+        b: Drift displacement vector.
 
     Returns:
         Array-like, desired samples.
@@ -88,26 +88,29 @@ def sample(
 
     by using exact diagonalization.
 
-    Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2)
+    Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2),
     where T=len(ts).
 
+    By default, this function does the preprocessing on A and D before the evaluation.
+    However, the preprocessing can be done externally using thermox.preprocess
+    the output of which can be used as A and D here, this will skip the preprocessing.
+
     Args:
-        key: jax PRNGKey.
-        ts: array-like, times at which samples are collected. Includes time for x0.
-        x0: initial state of the process.
-        A: drift matrix (Array or thermox.ProcessedDriftMatrix).
-        b: drift displacement vector.
-        D: diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
+        key: Jax PRNGKey.
+        ts: Times at which samples are collected. Includes time for x0.
+        x0: Initial state of the process.
+        A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
+            Note : If a thermox.ProcessedDriftMatrix instance is used as input,
+            must be the transformed drift matrix, A_y, given by thermox.preprocess,
+            not thermox.utils.preprocess_drift_matrix.
+        b: Drift displacement vector.
+        D: Diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
 
     Returns:
         Array-like, desired samples.
             shape: (len(ts), ) + x0.shape
     """
-    if isinstance(A, Array) and isinstance(D, Array):
-        A_y, D = preprocess(A, D)
-
-    assert isinstance(A_y, ProcessedDriftMatrix)
-    assert isinstance(D, ProcessedDiffusionMatrix)
+    A_y, D = handle_matrix_inputs(A, D)
 
     y0 = D.sqrt_inv @ x0
     b_y = D.sqrt_inv @ b
