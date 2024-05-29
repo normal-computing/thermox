@@ -1,0 +1,41 @@
+name: Publish PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  pypi-publish:
+    name: upload release to PyPI
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+      - name: Build package
+        run: python -m build
+      - name: Check sdist install and imports
+        run: |
+          mkdir -p test-sdist
+          cd test-sdist
+          python -m venv venv-sdist
+          venv-sdist/bin/python -m pip install ../dist/thermox-*.tar.gz
+          venv-sdist/bin/python -c "import thermox"
+      - name: Check wheel install and imports
+        run: |
+          mkdir -p test-wheel
+          cd test-wheel
+          python -m venv venv-wheel
+          venv-wheel/bin/python -m pip install ../dist/thermox-*.whl
+          venv-wheel/bin/python -c "import thermox"
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
