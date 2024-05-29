@@ -1,12 +1,12 @@
-import jax
 import jax.numpy as jnp
-from thermox.sampler import sample, sample_identity_diffusion
 from jax.lax import fori_loop
-from jax import Array
+from jax import Array, random
+from thermox.sampler import sample, sample_identity_diffusion
+from thermox.utils import ProcessedDriftMatrix
 
 
 def solve(
-    A,
+    A: Array | ProcessedDriftMatrix,
     b,
     num_samples: int = 10000,
     dt: float = 1.0,
@@ -34,7 +34,7 @@ def solve(
         Approximate solution, x, of the linear system.
     """
     if key is None:
-        key = jax.random.PRNGKey(0)
+        key = random.PRNGKey(0)
     ts = jnp.arange(burnin, burnin + num_samples) * dt
     x0 = jnp.zeros_like(b)
     samples = sample_identity_diffusion(key, ts, x0, A, jnp.linalg.solve(A, b))
@@ -42,7 +42,7 @@ def solve(
 
 
 def inv(
-    A,
+    A: Array,
     num_samples: int = 10000,
     dt: float = 1.0,
     burnin: int = 0,
@@ -65,7 +65,7 @@ def inv(
         Approximate inverse of A.
     """
     if key is None:
-        key = jax.random.PRNGKey(0)
+        key = random.PRNGKey(0)
     ts = jnp.arange(burnin, burnin + num_samples) * dt
     b = jnp.zeros(A.shape[0])
     x0 = jnp.zeros_like(b)
@@ -74,7 +74,7 @@ def inv(
 
 
 def expnegm(
-    A,
+    A: Array,
     num_samples: int = 10000,
     dt: float = 1.0,
     burnin: int = 0,
@@ -100,7 +100,7 @@ def expnegm(
         Approximate negative matrix exponential, exp(-A).
     """
     if key is None:
-        key = jax.random.PRNGKey(0)
+        key = random.PRNGKey(0)
 
     A_shifted = (A + alpha * jnp.eye(A.shape[0])) / dt
     B = A_shifted + A_shifted.T
@@ -113,7 +113,7 @@ def expnegm(
 
 
 def expm(
-    A,
+    A: Array,
     num_samples: int = 10000,
     dt: float = 1.0,
     burnin: int = 0,
