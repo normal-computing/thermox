@@ -1,0 +1,28 @@
+[project]
+name = "thermox"
+version = "0.0.1"
+description = "OU Processes and Linear Algebra with JAX"
+readme = "README.md"
+requires-python =">=3.9"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Sam Duffield", email = "sam@normalcomputing.ai"},
+    {name = "Kaelan Donatella", email = "kaelan@normalcomputing.ai"},
+]
+keywords = ["jax", "linear algebra", "ou process", "stochastic process"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "License :: OSI Approved :: Apache Software License",
+]
+dependencies = ["jax>=0.4.0", "jaxlib>=0.4.0", "fmmax>=0.8.0"]
+
+[project.optional-dependencies]
+test = ["pre-commit", "pytest-cov", "ruff", "optax", "mypy"]
+
+[tool.setuptools]
+packages = ["thermox"]
+
+[tool.ruff]
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F821"]
