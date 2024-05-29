@@ -69,7 +69,7 @@ def inv(
     ts = jnp.arange(burnin, burnin + num_samples) * dt
     b = jnp.zeros(A.shape[0])
     x0 = jnp.zeros_like(b)
-    samples = sample_identity_diffusion(key, ts, x0, A, b, 2 * jnp.eye(A.shape[0]))
+    samples = sample(key, ts, x0, A, b, 2 * jnp.eye(A.shape[0]))
     return jnp.cov(samples.T)
 
 
