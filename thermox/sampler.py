@@ -48,9 +48,6 @@ def sample_identity_diffusion(
         out = A.eigvecs @ out
         return out.real
 
-    def transition_mean(x, dt):
-        return b + expm_vp(x - b, dt)
-
     def transition_cov_sqrt_vp(v, dt):
         diag = ((1 - jnp.exp(-2 * A.sym_eigvals * dt)) / (2 * A.sym_eigvals)) ** 0.5
         out = diag * v
@@ -59,22 +56,29 @@ def sample_identity_diffusion(
 
     dts = jnp.diff(ts)
 
-    noise_terms = jax.vmap(transition_cov_sqrt_vp)(
-        jax.random.normal(key, (len(dts),) + x0.shape), dts
-    )
+    # transition_mean(x, dt) = b + expm_vp(x - b, dt)
+    def position_indep_mean_component(dt):
+        return b - expm_vp(b, dt)
+
+    def position_dep_mean_component(x, dt):
+        return expm_vp(x, dt)
+
+    gauss_samps = jax.random.normal(key, (len(dts),) + x0.shape)
+    position_indep_terms = jax.vmap(transition_cov_sqrt_vp)(
+        gauss_samps, dts
+    ) + jax.vmap(position_indep_mean_component)(dts)
 
     @partial(jax.vmap, in_axes=(0, 0))
     def binary_associative_operator(elem_a, elem_b):
         t_a, x_a = elem_a
         t_b, x_b = elem_b
-        return t_a + t_b, transition_mean(x_a, t_b) + x_b
+        return t_a + t_b, position_dep_mean_component(x_a, t_b) + x_b
 
     scan_times = jnp.concatenate([ts[:1], dts], dtype=float)  # [t0, dt1, dt2, ...]
-    scan_input_values = jnp.concatenate([x0[None], noise_terms], axis=0)
+    scan_input_values = jnp.concatenate([x0[None], position_indep_terms], axis=0)
     scan_elems = (scan_times, scan_input_values)
 
     scan_output = jax.lax.associative_scan(binary_associative_operator, scan_elems)
-
     return scan_output[1]
 
 
