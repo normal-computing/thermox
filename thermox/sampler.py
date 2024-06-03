@@ -27,6 +27,9 @@ def sample_identity_diffusion(
     Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2)
     where T=len(ts).
 
+    Uses jax.lax.associative_scan, so will run in time O(log(T) * d^2) on a GPU/TPU with
+    O(T) cores.
+
     Args:
         key: Jax PRNGKey.
         ts: Times at which samples are collected. Includes time for x0.
@@ -57,16 +60,11 @@ def sample_identity_diffusion(
     dts = jnp.diff(ts)
 
     # transition_mean(x, dt) = b + expm_vp(x - b, dt)
-    def position_indep_mean_component(dt):
-        return b - expm_vp(b, dt)
-
     def position_dep_mean_component(x, dt):
         return expm_vp(x, dt)
 
     gauss_samps = jax.random.normal(key, (len(dts),) + x0.shape)
-    position_indep_terms = jax.vmap(transition_cov_sqrt_vp)(
-        gauss_samps, dts
-    ) + jax.vmap(position_indep_mean_component)(dts)
+    position_indep_terms = jax.vmap(transition_cov_sqrt_vp)(gauss_samps, dts) + b
 
     @partial(jax.vmap, in_axes=(0, 0))
     def binary_associative_operator(elem_a, elem_b):
@@ -75,11 +73,13 @@ def sample_identity_diffusion(
         return t_a + t_b, position_dep_mean_component(x_a, t_b) + x_b
 
     scan_times = jnp.concatenate([ts[:1], dts], dtype=float)  # [t0, dt1, dt2, ...]
-    scan_input_values = jnp.concatenate([x0[None], position_indep_terms], axis=0)
+    scan_input_values = (
+        jnp.concatenate([x0[None], position_indep_terms], axis=0) - b
+    )  # Shift by b to ensure expm_vp(x - b, dt) is calculated at each step
     scan_elems = (scan_times, scan_input_values)
 
     scan_output = jax.lax.associative_scan(binary_associative_operator, scan_elems)
-    return scan_output[1]
+    return scan_output[1] + b
 
 
 def sample(
@@ -99,6 +99,9 @@ def sample(
     Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2),
     where T=len(ts).
 
+    Uses jax.lax.associative_scan, so will run in time O(log(T) * d^2) on a GPU/TPU with
+    O(T) cores.
+
     By default, this function does the preprocessing on A and D before the evaluation.
     However, the preprocessing can be done externally using thermox.preprocess
     the output of which can be used as A and D here, this will skip the preprocessing.
@@ -108,7 +111,7 @@ def sample(
         ts: Times at which samples are collected. Includes time for x0.
         x0: Initial state of the process.
         A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
-            Note : If a thermox.ProcessedDriftMatrix instance is used as input,
+            Note: If a thermox.ProcessedDriftMatrix instance is used as input,
             must be the transformed drift matrix, A_y, given by thermox.preprocess,
             not thermox.utils.preprocess_drift_matrix.
         b: Drift displacement vector.

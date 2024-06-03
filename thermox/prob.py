@@ -105,7 +105,7 @@ def log_prob(
         ts: Times at which samples are collected. Includes time for x0.
         xs: Initial state of the process.
         A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
-            Note : If a thermox.ProcessedDriftMatrix instance is used as input,
+            Note: If a thermox.ProcessedDriftMatrix instance is used as input,
             must be the transformed drift matrix, A_y, given by thermox.preprocess,
             not thermox.utils.preprocess_drift_matrix.
         b: Drift displacement vector.

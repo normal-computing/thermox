@@ -7,11 +7,13 @@ import thermox
 def test_sample_array_input():
     key = jax.random.PRNGKey(0)
     dim = 2
-    dt = 0.1
-    ts = jnp.arange(0, 10_000, dt)
+    # dt = 0.1
+    # ts = jnp.arange(0, 10_000, dt)
+    ts = jax.random.uniform(jax.random.PRNGKey(0), (1_000,)).sort()
 
-    A = jnp.array([[3, 2], [2, 4.0]])
-    b, x0 = jnp.zeros(dim), jnp.zeros(dim)
+    A = jnp.array([[3, 2.5], [2, 4.0]])
+    b = jax.random.normal(jax.random.PRNGKey(1), (dim,))
+    x0 = jax.random.normal(jax.random.PRNGKey(2), (dim,))
     D = 2 * jnp.eye(dim)
 
     samples = thermox.sample(key, ts, x0, A, b, D)
