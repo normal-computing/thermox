@@ -7,9 +7,12 @@ import thermox
 def test_sample_array_input():
     key = jax.random.PRNGKey(0)
     dim = 2
-    # dt = 0.1
-    # ts = jnp.arange(0, 10_000, dt)
-    ts = jax.random.uniform(jax.random.PRNGKey(0), (1_000,)).sort()
+    dt = 0.1
+    ts = jnp.arange(0, 10_000, dt)
+
+    # Add some noise to the time points to make the timesteps different
+    ts += jax.random.uniform(key, (ts.shape[0],)) * dt
+    ts = ts.sort()
 
     A = jnp.array([[3, 2.5], [2, 4.0]])
     b = jax.random.normal(jax.random.PRNGKey(1), (dim,))
