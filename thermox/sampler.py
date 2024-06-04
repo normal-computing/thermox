@@ -159,7 +159,7 @@ def sample(
     Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2),
     where T=len(ts).
 
-    Uses jax.lax.associative_scan, so will run in time O(log(T) * d^2) on a GPU/TPU with
+    Uses jax.lax.associative_scan, so will run in time O((T/p + log(T)) * d^2) on a GPU/TPU with
     O(T) cores.
 
     By default, this function does the preprocessing on A and D before the evaluation.
