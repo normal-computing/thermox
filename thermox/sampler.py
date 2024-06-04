@@ -74,19 +74,22 @@ def _sample_identity_diffusion_scan(
         out = A.sym_eigvecs @ out
         return out.real
 
-    def next_x(x, dt, tkey):
-        randv = jax.random.normal(tkey, shape=x.shape)
-        return transition_mean(x, dt) + transition_cov_sqrt_vp(randv, dt)
+    def next_x(x, dt, rv):
+        return transition_mean(x, dt) + transition_cov_sqrt_vp(rv, dt)
 
-    def scan_body(x_and_key, dt):
-        x, rk = x_and_key
-        rk, rk_use = jax.random.split(rk)
-        x = next_x(x, dt, rk_use)
-        return (x, rk), x
+    def scan_body(carry, dt_and_rv):
+        x = carry
+        dt, rv = dt_and_rv
+        new_x = next_x(x, dt, rv)
+        return new_x, new_x
 
     dts = jnp.diff(ts)
+    gauss_samps = jax.random.normal(key, (len(dts),) + x0.shape)
 
-    xs = jax.lax.scan(scan_body, (x0, key), dts)[1]
+    # Stack dts and gauss_samps along a new axis
+    dt_and_rv = (dts, gauss_samps)
+
+    _, xs = jax.lax.scan(scan_body, x0, dt_and_rv)
     xs = jnp.concatenate([jnp.expand_dims(x0, axis=0), xs], axis=0)
     return xs
 
