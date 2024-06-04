@@ -19,9 +19,16 @@ def test_sample_array_input():
     x0 = jax.random.normal(jax.random.PRNGKey(2), (dim,))
     D = 2 * jnp.eye(dim)
 
-    samples = thermox.sample(key, ts, x0, A, b, D)
+    samples = thermox.sample(key, ts, x0, A, b, D, associative_scan=False)
 
     samp_cov = jnp.cov(samples.T)
     samp_mean = jnp.mean(samples.T, axis=1)
+    assert jnp.allclose(A @ samp_cov, jnp.eye(2), atol=1e-1)
+    assert jnp.allclose(samp_mean, b, atol=1e-1)
+
+    samples_as = thermox.sample(key, ts, x0, A, b, D, associative_scan=True)
+
+    samp_cov = jnp.cov(samples_as.T)
+    samp_mean = jnp.mean(samples_as.T, axis=1)
     assert jnp.allclose(A @ samp_cov, jnp.eye(2), atol=1e-1)
     assert jnp.allclose(samp_mean, b, atol=1e-1)
