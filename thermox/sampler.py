@@ -11,7 +11,7 @@ from thermox.utils import (
 )
 
 
-def sample_identity_diffusion(
+def _sample_identity_diffusion(
     key: Array,
     ts: Array,
     x0: Array,
@@ -19,30 +19,6 @@ def sample_identity_diffusion(
     b: Array,
     associative_scan: bool = True,
 ) -> Array:
-    """Collects samples from the Ornstein-Uhlenbeck process, defined as:
-
-    dx = - A * (x - b) dt + dW
-
-    by using exact diagonalization.
-
-    Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2)
-    where T=len(ts).
-
-    If associative_scan = True then jax.lax.associative_scan is used, so will run in
-    time O(log(T) * d^2) on a GPU/TPU with O(T) cores.
-
-    Args:
-        key: Jax PRNGKey.
-        ts: Times at which samples are collected. Includes time for x0.
-        x0: Initial state of the process.
-        A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
-        b: Drift displacement vector.
-        associative_scan: If True, uses jax.lax.associative_scan.
-
-    Returns:
-        Array-like, desired samples.
-            shape: (len(ts), ) + x0.shape
-    """
     if associative_scan:
         return _sample_identity_diffusion_associative_scan(key, ts, x0, A, b)
     else:
@@ -186,5 +162,5 @@ def sample(
 
     y0 = D.sqrt_inv @ x0
     b_y = D.sqrt_inv @ b
-    ys = sample_identity_diffusion(key, ts, y0, A_y, b_y, associative_scan)
+    ys = _sample_identity_diffusion(key, ts, y0, A_y, b_y, associative_scan)
     return jax.vmap(jnp.matmul, in_axes=(None, 0))(D.sqrt, ys)
