@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from jax.lax import fori_loop
 from jax import Array, random
-from thermox.sampler import sample, sample_identity_diffusion
+from thermox.sampler import sample, _sample_identity_diffusion
 from thermox.utils import ProcessedDriftMatrix
 
 
@@ -37,7 +37,7 @@ def solve(
         key = random.PRNGKey(0)
     ts = jnp.arange(burnin, burnin + num_samples) * dt
     x0 = jnp.zeros_like(b)
-    samples = sample_identity_diffusion(key, ts, x0, A, jnp.linalg.solve(A, b))
+    samples = _sample_identity_diffusion(key, ts, x0, A, jnp.linalg.solve(A, b))
     return jnp.mean(samples, axis=0)
 
 
