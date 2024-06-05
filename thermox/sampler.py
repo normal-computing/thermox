@@ -99,7 +99,7 @@ def _sample_identity_diffusion_associative_scan(
         return expm_vp(x, dt)
 
     gauss_samps = jax.random.normal(key, (len(dts),) + x0.shape)
-    position_indep_terms = jax.vmap(transition_cov_sqrt_vp)(gauss_samps, dts) + b
+    position_indep_terms = jax.vmap(transition_cov_sqrt_vp)(gauss_samps, dts)
 
     @partial(jax.vmap, in_axes=(0, 0))
     def binary_associative_operator(elem_a, elem_b):
@@ -108,13 +108,13 @@ def _sample_identity_diffusion_associative_scan(
         return t_a + t_b, position_dep_mean_component(x_a, t_b) + x_b
 
     scan_times = jnp.concatenate([ts[:1], dts], dtype=float)  # [t0, dt1, dt2, ...]
-    scan_input_values = (
-        jnp.concatenate([x0[None], position_indep_terms], axis=0) - b
-    )  # Shift by b to ensure expm_vp(x - b, dt) is calculated at each step
+    scan_input_values = jnp.concatenate(
+        [x0[None] - b, position_indep_terms], axis=0
+    )  # Shift input by b
     scan_elems = (scan_times, scan_input_values)
 
     scan_output = jax.lax.associative_scan(binary_associative_operator, scan_elems)
-    return scan_output[1] + b
+    return scan_output[1] + b  # Shift back by b
 
 
 def sample(
