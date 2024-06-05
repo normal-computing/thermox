@@ -75,6 +75,20 @@ def sample_identity_diffusion(
         return _sample_identity_diffusion_scan(key, ts, x0, A, b)
 
 
+def expm_vp(A, v, dt):
+    out = A.eigvecs_inv @ v
+    out = jnp.exp(-A.eigvals * dt) * out
+    out = A.eigvecs @ out
+    return out.real
+
+
+def transition_cov_sqrt_vp(A, v, dt):
+    diag = ((1 - jnp.exp(-2 * A.sym_eigvals * dt)) / (2 * A.sym_eigvals)) ** 0.5
+    out = diag * v
+    out = A.sym_eigvecs @ out
+    return out.real
+
+
 def _sample_identity_diffusion_scan(
     key: Array,
     ts: Array,
@@ -85,23 +99,11 @@ def _sample_identity_diffusion_scan(
     if isinstance(A, Array):
         A = preprocess_drift_matrix(A)
 
-    def expm_vp(v, dt):
-        out = A.eigvecs_inv @ v
-        out = jnp.exp(-A.eigvals * dt) * out
-        out = A.eigvecs @ out
-        return out.real
-
     def transition_mean(x, dt):
-        return b + expm_vp(x - b, dt)
-
-    def transition_cov_sqrt_vp(v, dt):
-        diag = ((1 - jnp.exp(-2 * A.sym_eigvals * dt)) / (2 * A.sym_eigvals)) ** 0.5
-        out = diag * v
-        out = A.sym_eigvecs @ out
-        return out.real
+        return b + expm_vp(A, x - b, dt)
 
     def next_x(x, dt, rv):
-        return transition_mean(x, dt) + transition_cov_sqrt_vp(rv, dt)
+        return transition_mean(x, dt) + transition_cov_sqrt_vp(A, rv, dt)
 
     def scan_body(carry, dt_and_rv):
         x = carry
@@ -130,36 +132,24 @@ def _sample_identity_diffusion_associative_scan(
     if isinstance(A, Array):
         A = preprocess_drift_matrix(A)
 
-    def expm_vp(v, dt):
-        out = A.eigvecs_inv @ v
-        out = jnp.exp(-A.eigvals * dt) * out
-        out = A.eigvecs @ out
-        return out.real
-
-    def transition_cov_sqrt_vp(v, dt):
-        diag = ((1 - jnp.exp(-2 * A.sym_eigvals * dt)) / (2 * A.sym_eigvals)) ** 0.5
-        out = diag * v
-        out = A.sym_eigvecs @ out
-        return out.real
-
     dts = jnp.diff(ts)
 
-    # transition_mean(x, dt) = b + expm_vp(x - b, dt)
-    def position_dep_mean_component(x, dt):
-        return expm_vp(x, dt)
+    # transition_mean(x, dt) = b + expm_vp(A, x - b, dt)
 
     gauss_samps = jax.random.normal(key, (len(dts),) + x0.shape)
-    position_indep_terms = jax.vmap(transition_cov_sqrt_vp)(gauss_samps, dts)
+    noise_terms = jax.vmap(lambda v, dt: transition_cov_sqrt_vp(A, v, dt))(
+        gauss_samps, dts
+    )
 
     @partial(jax.vmap, in_axes=(0, 0))
     def binary_associative_operator(elem_a, elem_b):
         t_a, x_a = elem_a
         t_b, x_b = elem_b
-        return t_a + t_b, position_dep_mean_component(x_a, t_b) + x_b
+        return t_a + t_b, expm_vp(A, x_a, t_b) + x_b
 
     scan_times = jnp.concatenate([ts[:1], dts], dtype=float)  # [t0, dt1, dt2, ...]
     scan_input_values = jnp.concatenate(
-        [x0[None] - b, position_indep_terms], axis=0
+        [x0[None] - b, noise_terms], axis=0
     )  # Shift input by b
     scan_elems = (scan_times, scan_input_values)
 
