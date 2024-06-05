@@ -11,7 +11,57 @@ from thermox.utils import (
 )
 
 
-def _sample_identity_diffusion(
+def sample(
+    key: Array,
+    ts: Array,
+    x0: Array,
+    A: Array | ProcessedDriftMatrix,
+    b: Array,
+    D: Array | ProcessedDiffusionMatrix,
+    associative_scan: bool = True,
+) -> Array:
+    """Collects samples from the Ornstein-Uhlenbeck process, defined as:
+
+    dx = - A * (x - b) dt + sqrt(D) dW
+
+    by using exact diagonalization.
+
+    Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2),
+    where T=len(ts).
+
+    If associative_scan=True then jax.lax.associative_scan is used which will run in
+    time O((T/p + log(T)) * d^2) on a GPU/TPU with p cores, still with
+    O(d^3) preprocessing.
+
+    By default, this function does the preprocessing on A and D before the evaluation.
+    However, the preprocessing can be done externally using thermox.preprocess
+    the output of which can be used as A and D here, this will skip the preprocessing.
+
+    Args:
+        key: Jax PRNGKey.
+        ts: Times at which samples are collected. Includes time for x0.
+        x0: Initial state of the process.
+        A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
+            Note: If a thermox.ProcessedDriftMatrix instance is used as input,
+            must be the transformed drift matrix, A_y, given by thermox.preprocess,
+            not thermox.utils.preprocess_drift_matrix.
+        b: Drift displacement vector.
+        D: Diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
+        associative_scan: If True, uses jax.lax.associative_scan.
+
+    Returns:
+        Array-like, desired samples.
+            shape: (len(ts), ) + x0.shape
+    """
+    A_y, D = handle_matrix_inputs(A, D)
+
+    y0 = D.sqrt_inv @ x0
+    b_y = D.sqrt_inv @ b
+    ys = sample_identity_diffusion(key, ts, y0, A_y, b_y, associative_scan)
+    return jax.vmap(jnp.matmul, in_axes=(None, 0))(D.sqrt, ys)
+
+
+def sample_identity_diffusion(
     key: Array,
     ts: Array,
     x0: Array,
@@ -115,52 +165,3 @@ def _sample_identity_diffusion_associative_scan(
 
     scan_output = jax.lax.associative_scan(binary_associative_operator, scan_elems)
     return scan_output[1] + b  # Shift back by b
-
-
-def sample(
-    key: Array,
-    ts: Array,
-    x0: Array,
-    A: Array | ProcessedDriftMatrix,
-    b: Array,
-    D: Array | ProcessedDiffusionMatrix,
-    associative_scan: bool = True,
-) -> Array:
-    """Collects samples from the Ornstein-Uhlenbeck process, defined as:
-
-    dx = - A * (x - b) dt + sqrt(D) dW
-
-    by using exact diagonalization.
-
-    Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2),
-    where T=len(ts).
-
-    Uses jax.lax.associative_scan, so will run in time O((T/p + log(T)) * d^2) on a GPU/TPU with
-    O(T) cores.
-
-    By default, this function does the preprocessing on A and D before the evaluation.
-    However, the preprocessing can be done externally using thermox.preprocess
-    the output of which can be used as A and D here, this will skip the preprocessing.
-
-    Args:
-        key: Jax PRNGKey.
-        ts: Times at which samples are collected. Includes time for x0.
-        x0: Initial state of the process.
-        A: Drift matrix (Array or thermox.ProcessedDriftMatrix).
-            Note: If a thermox.ProcessedDriftMatrix instance is used as input,
-            must be the transformed drift matrix, A_y, given by thermox.preprocess,
-            not thermox.utils.preprocess_drift_matrix.
-        b: Drift displacement vector.
-        D: Diffusion matrix (Array or thermox.ProcessedDiffusionMatrix).
-        associative_scan: If True, uses jax.lax.associative_scan.
-
-    Returns:
-        Array-like, desired samples.
-            shape: (len(ts), ) + x0.shape
-    """
-    A_y, D = handle_matrix_inputs(A, D)
-
-    y0 = D.sqrt_inv @ x0
-    b_y = D.sqrt_inv @ b
-    ys = _sample_identity_diffusion(key, ts, y0, A_y, b_y, associative_scan)
-    return jax.vmap(jnp.matmul, in_axes=(None, 0))(D.sqrt, ys)
