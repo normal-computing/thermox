@@ -30,6 +30,7 @@ def solve(
         burnin: Time-step index corresponding to the end of the burn-in period.
             Samples before this step are not collected.
         key: JAX random key
+        associative_scan: If True, uses jax.lax.associative_scan.
 
     Returns:
         Approximate solution, x, of the linear system.
@@ -64,6 +65,7 @@ def inv(
         burnin: Time-step index corresponding to the end of the burn-in period.
             Samples before this step are not collected.
         key: JAX random key
+        associative_scan: If True, uses jax.lax.associative_scan.
 
     Returns:
         Approximate inverse of A.
@@ -100,6 +102,7 @@ def expnegm(
         key: JAX random key
         alpha: Regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
+        associative_scan: If True, uses jax.lax.associative_scan.
 
     Returns:
         Approximate negative matrix exponential, exp(-A).
@@ -140,6 +143,7 @@ def expm(
         key: JAX random key
         alpha: Regularization parameter to ensure diffusion matrix
             is symmetric positive definite.
+        associative_scan: If True, uses jax.lax.associative_scan.
 
     Returns:
         Approximate matrix exponential, exp(A).
