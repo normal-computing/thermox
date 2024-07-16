@@ -26,7 +26,7 @@ def sample(
 
     by using exact diagonalization.
 
-    Preprocessing (diagonalisation) costs O(d^3) and sampling costs O(T * d^2),
+    Preprocessing (diagonalization) costs O(d^3) and sampling costs O(T * d^2),
     where T=len(ts).
 
     If associative_scan=True then jax.lax.associative_scan is used which will run in
