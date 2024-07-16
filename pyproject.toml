@@ -1,6 +1,6 @@
 [project]
 name = "thermox"
-version = "0.0.1"
+version = "0.0.2"
 description = "Exact OU processes with JAX"
 readme = "README.md"
 requires-python =">=3.9"
