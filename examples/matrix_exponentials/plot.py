@@ -43,9 +43,10 @@ ylabel_rel = (
     if matrix_type == "wishart"
     else r"$\frac{|| \bar{C} - \exp(-M)||_F}{||\exp(-M)||_F}$"
 )
+fig_label = "(A)" if matrix_type == "wishart" else "(B)"
 
 
-def plot(ERR, ylabel, e0, save_path, d=False, d_squared=False):
+def plot(ERR, ylabel, e0, save_path, d=False, d_squared=False, fig_label=None):
     T = np.arange(NT) * dt
     ERR_mean = ERR.mean(axis=0)
 
@@ -55,6 +56,9 @@ def plot(ERR, ylabel, e0, save_path, d=False, d_squared=False):
         TC[i] = np.min(T[10:][ERR_mean[i, 10:] < e0])
 
     plt.figure(figsize=(7, 4.5))
+
+    if fig_label is not None:
+        plt.gcf().text(0.02, 0.93, fig_label, fontsize=22)
 
     for i in range(len(D)):
         plt.plot(T, ERR_mean[i], color=colors[i])
@@ -120,6 +124,7 @@ plot(
     e0_abs,
     f"examples/matrix_exponentials/{matrix_type}_abs.pdf",
     d_squared=True,
+    fig_label=fig_label,
 )
 
 
@@ -129,4 +134,5 @@ plot(
     e0_rel,
     f"examples/matrix_exponentials/{matrix_type}_rel.pdf",
     d=True,
+    fig_label=fig_label,
 )
