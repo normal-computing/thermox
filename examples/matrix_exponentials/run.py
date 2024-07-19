@@ -24,7 +24,7 @@ parser.add_argument("--alpha", type=float, default=0.0)
 args = parser.parse_args()
 
 
-sample = jit(partial(thermox.sample, associative_scan=False))
+sample = jit(thermox.sample)
 get_matrix = getattr(matrix_generation, args.matrix_type)
 
 

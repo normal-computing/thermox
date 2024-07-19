@@ -8,7 +8,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--save_dir", type=str)
 args = parser.parse_args()
 
+
 matrix_type = args.save_dir.split("/")[-1].split("_")[1].split(".")[0]
+
 
 # use latex for plots
 plt.rc("text", usetex=True)
@@ -26,19 +28,24 @@ colors = [
 
 
 results = pickle.load(open(args.save_dir, "rb"))
-ERR_abs = results["ERR_abs"]
 dt = results["dt"]
-NT = ERR_abs.shape[-1]
+NT = results["ERR_abs"].shape[-1]
 D = results["D"]
-e0 = 8.0 if matrix_type == "wishart" else 2.1e3
-ylabel = (
+e0_abs = 8.0 if matrix_type == "wishart" else 19.0
+ylabel_abs = (
     r"$|| \bar{C} - \exp(-A)||_F$"
     if matrix_type == "wishart"
     else r"$|| \bar{C} - \exp(-M)||_F$"
 )
+e0_rel = 0.9
+ylabel_rel = (
+    r"$\frac{|| \bar{C} - \exp(-A)||_F}{||\exp(-A)||_F}$"
+    if matrix_type == "wishart"
+    else r"$\frac{|| \bar{C} - \exp(-M)||_F}{||\exp(-M)||_F}$"
+)
 
 
-def plot(ERR, ylabel, e0, save_path, d_squared=True):
+def plot(ERR, ylabel, e0, save_path, d=False, d_squared=False):
     T = np.arange(NT) * dt
     ERR_mean = ERR.mean(axis=0)
 
@@ -84,8 +91,13 @@ def plot(ERR, ylabel, e0, save_path, d_squared=True):
     for i in range(len(D)):
         ax.scatter(D[i], TC[i], color=colors[i], zorder=10)
 
+    ts = np.array([10, 2000])
+
+    if d:
+        plt.plot(ts, 100 * ts, color="black", linestyle="--")
+        plt.text(600, 8e4, s=r"$t_C = d$", rotation=25)
+
     if d_squared:
-        ts = np.array([10, 2000])
         plt.plot(ts, 0.3 * ts**2, color="black", linestyle="--")
         plt.text(550, 1.7e5, s=r"$t_C = d^2$", rotation=25)
 
@@ -102,4 +114,19 @@ def plot(ERR, ylabel, e0, save_path, d_squared=True):
     plt.show()
 
 
-plot(ERR_abs, ylabel, e0, f"examples/matrix_exponentials/{matrix_type}_abs.pdf")
+plot(
+    results["ERR_abs"],
+    ylabel_abs,
+    e0_abs,
+    f"examples/matrix_exponentials/{matrix_type}_abs.pdf",
+    d_squared=True,
+)
+
+
+plot(
+    results["ERR_rel"],
+    ylabel_rel,
+    e0_rel,
+    f"examples/matrix_exponentials/{matrix_type}_rel.pdf",
+    d=True,
+)
