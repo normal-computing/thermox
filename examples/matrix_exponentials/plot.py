@@ -88,7 +88,7 @@ def plot(ERR, ylabel, e0, save_path, d=False, d_squared=False, fig_label=None):
     plt.xlim(30, T[-1])
 
     # inset plot showing crossing time as a function of dimension
-    ax = plt.axes([0.16, 0.22, 0.3, 0.35])
+    ax = plt.axes([0.17, 0.22, 0.3, 0.35])
     ax.tick_params(axis="y", direction="in", pad=-22)
     ax.tick_params(axis="x", direction="in", pad=-15)
 
