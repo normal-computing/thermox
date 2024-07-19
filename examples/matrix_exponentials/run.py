@@ -1,4 +1,3 @@
-from functools import partial
 from jax import random, jit, config, numpy as jnp
 from jax.scipy.linalg import expm
 from jax.lax import scan
