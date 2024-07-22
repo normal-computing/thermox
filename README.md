@@ -76,3 +76,14 @@ plt.show()
 </p>
 
 
+# Citation
+If you use `thermox` in your research, please cite the library using the following BibTeX entry:
+
+```bibtex
+@misc{duffield2024thermox,
+  title={thermox: Exact OU processes with JAX},
+  author={Duffield, Samuel and Donatella, Kaelan and Melanson, Denis},
+  howpublished={\url{https://github.com/normal-computing/thermox}},
+  year={2024}
+}
+```
