@@ -29,7 +29,7 @@ colors = [
 
 results = pickle.load(open(args.save_dir, "rb"))
 dt = results["dt"]
-NT = results["ERR_abs"].shape[-1]
+NT = results["err_abs"].shape[-1]
 D = results["D"]
 e0_abs = 8.0 if matrix_type == "wishart" else 19.0
 ylabel_abs = (
@@ -46,14 +46,14 @@ ylabel_rel = (
 fig_label = "(A)" if matrix_type == "wishart" else "(B)"
 
 
-def plot(ERR, ylabel, e0, save_path, d=False, d_squared=False, fig_label=None):
+def plot(err, ylabel, e0, save_path, d=False, d_squared=False, fig_label=None):
     T = np.arange(NT) * dt
-    ERR_mean = ERR.mean(axis=0)
+    err_mean = err.mean(axis=0)
 
     # find time where error crosses threshold
     TC = np.zeros(len(D))
     for i in range(len(D)):
-        TC[i] = np.min(T[10:][ERR_mean[i, 10:] < e0])
+        TC[i] = np.min(T[10:][err_mean[i, 10:] < e0])
 
     plt.figure(figsize=(7, 4.5))
 
@@ -61,14 +61,14 @@ def plot(ERR, ylabel, e0, save_path, d=False, d_squared=False, fig_label=None):
         plt.gcf().text(0.02, 0.93, fig_label, fontsize=22)
 
     for i in range(len(D)):
-        plt.plot(T, ERR_mean[i], color=colors[i])
+        plt.plot(T, err_mean[i], color=colors[i])
 
     # Add error bars
     for i in range(len(D)):
         plt.fill_between(
             T,
-            ERR_mean[i] - ERR[:, i].std(axis=0),
-            ERR_mean[i] + ERR[:, i].std(axis=0),
+            err_mean[i] - err[:, i].std(axis=0),
+            err_mean[i] + err[:, i].std(axis=0),
             color=colors[i],
             alpha=0.3,
             zorder=0,
@@ -119,7 +119,7 @@ def plot(ERR, ylabel, e0, save_path, d=False, d_squared=False, fig_label=None):
 
 
 plot(
-    results["ERR_abs"],
+    results["err_abs"],
     ylabel_abs,
     e0_abs,
     f"examples/matrix_exponentials/{matrix_type}_abs.pdf",
@@ -129,7 +129,7 @@ plot(
 
 
 plot(
-    results["ERR_rel"],
+    results["err_rel"],
     ylabel_rel,
     e0_rel,
     f"examples/matrix_exponentials/{matrix_type}_rel.pdf",

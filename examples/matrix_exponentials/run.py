@@ -54,8 +54,8 @@ def samps_to_autocovs_errs(samps, true_exp):
 
 
 # Initialize arrays to store errors
-ERR_abs = np.zeros((args.n_repeats, len(D), NT))
-ERR_rel = np.zeros_like(ERR_abs)
+err_abs = np.zeros((args.n_repeats, len(D), NT))
+err_rel = np.zeros_like(err_abs)
 
 # Loop over repeats and dimensions
 for repeat in tqdm(range(args.n_repeats)):
@@ -93,10 +93,10 @@ for repeat in tqdm(range(args.n_repeats)):
 
         # Compute absolute error
         err_abs = samps_to_autocovs_errs(X, exact_exp_min_A)
-        ERR_abs[repeat, i, 1:] = err_abs
+        err_abs[repeat, i, 1:] = err_abs
 
         # Compute relative error
-        ERR_rel[repeat, i, 1:] = err_abs / jnp.linalg.norm(exact_exp_min_A)
+        err_rel[repeat, i, 1:] = err_abs / jnp.linalg.norm(exact_exp_min_A)
 
     # Save results (overwrites after each repeat)
     with open(
@@ -107,8 +107,8 @@ for repeat in tqdm(range(args.n_repeats)):
                 "D": D,
                 "dt": dt,
                 "alpha": alpha,
-                "ERR_abs": ERR_abs,
-                "ERR_rel": ERR_rel,
+                "err_abs": err_abs,
+                "err_rel": err_rel,
             },
             f,
         )
