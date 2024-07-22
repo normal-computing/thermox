@@ -12,8 +12,8 @@ from examples.matrix_exponentials import matrix_generation
 # Set the precision of the computation
 config.update("jax_enable_x64", True)
 
+# Set seed for orthogonal matrix generation
 np.random.seed(42)
-
 
 # Load n_repeats, matrix_type and alpha from the command line
 parser = argparse.ArgumentParser()
@@ -21,24 +21,24 @@ parser.add_argument("--n_repeats", type=int, default=1)
 parser.add_argument("--matrix_type", type=str, default="wishart")
 parser.add_argument("--alpha", type=float, default=0.0)
 args = parser.parse_args()
-
-
-sample = jit(thermox.sample)
 get_matrix = getattr(matrix_generation, args.matrix_type)
+alpha = args.alpha
 
+# Jit for speed (avoid recompilation)
+sample = jit(thermox.sample)
 
+# Hyperparameters shared across all experiments
 NT = 10000
 dt = 12
 ts = jnp.arange(NT) * dt
 N_burn = 0
 keys = random.split(random.PRNGKey(42), args.n_repeats)
-
-
 gamma = 1
 beta = 1
-alpha = args.alpha
+D = [64, 128, 256, 512]
 
 
+# Function to compute array of autocovariance errors from samples
 @jit
 def samps_to_autocovs_errs(samps, true_exp):
     def body_func(prev_mat, n):
@@ -53,10 +53,11 @@ def samps_to_autocovs_errs(samps, true_exp):
     )[1]
 
 
-D = [64, 128, 256, 512]
+# Initialize arrays to store errors
 ERR_abs = np.zeros((args.n_repeats, len(D), NT))
 ERR_rel = np.zeros_like(ERR_abs)
 
+# Loop over repeats and dimensions
 for repeat in tqdm(range(args.n_repeats)):
     key = keys[repeat]
     for i in range(len(D)):
@@ -64,19 +65,23 @@ for repeat in tqdm(range(args.n_repeats)):
         print(f"Repeat {repeat}/{args.n_repeats}, \t D = {d}")
 
         A = get_matrix(d, key)
-
         exact_exp_min_A = expm(-A)
 
+        # Shift and scale A and compute symmetrized B
         A_shifted = (A + alpha * jnp.eye(A.shape[0])) / dt
         B = A_shifted + A_shifted.T
 
+        # Print eigenvalues
         A_shifted_lambda_min = jnp.min(jnp.linalg.eig(A_shifted / gamma)[0].real)
         print("A Eig min: ", A_shifted_lambda_min)
 
         D_lambda_min = jnp.min(jnp.linalg.eig(B / (gamma * beta))[0].real)
         print("D Eig min: ", D_lambda_min)
 
+        # Initialize at zeros
         x0 = np.zeros(d)
+
+        # Run the sampler
         X = sample(
             key,
             ts,
@@ -86,11 +91,14 @@ for repeat in tqdm(range(args.n_repeats)):
             B / (gamma * beta),
         )
 
+        # Compute absolute error
         err_abs = samps_to_autocovs_errs(X, exact_exp_min_A)
-
         ERR_abs[repeat, i, 1:] = err_abs
+
+        # Compute relative error
         ERR_rel[repeat, i, 1:] = err_abs / jnp.linalg.norm(exact_exp_min_A)
 
+    # Save results (overwrites after each repeat)
     with open(
         f"examples/matrix_exponentials/results_{args.matrix_type}.pkl", "wb"
     ) as f:
