@@ -28,10 +28,6 @@ def preprocess_drift_matrix(A: Array) -> ProcessedDriftMatrix:
     """
 
     A_eigvals, A_eigvecs = eig(A + 0.0j)
-
-    A_eigvals = A_eigvals.real
-    A_eigvecs = A_eigvecs.real
-
     A_eigvecs_inv = jnp.linalg.inv(A_eigvecs)
 
     symA = 0.5 * (A + A.T)
@@ -39,7 +35,7 @@ def preprocess_drift_matrix(A: Array) -> ProcessedDriftMatrix:
 
     return ProcessedDriftMatrix(
         A,
-        A_eigvals.real,
+        A_eigvals,
         A_eigvecs,
         A_eigvecs_inv,
         symA_eigvals,
