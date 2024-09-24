@@ -91,33 +91,31 @@ def test_MLE():
     D_true = jnp.array([[1, 0.3, -0.1], [0.3, 1, 0.2], [-0.1, 0.2, 1.0]])
 
     nts = 300
-    ts = jnp.linspace(0, 10, nts)
+    ts = jnp.linspace(0, 100, nts)
     x0 = jnp.zeros_like(b_true)
 
-    n_trajecs = 3
+    n_trajecs = 5
     rks = jax.random.split(jax.random.PRNGKey(0), n_trajecs)
 
     samps = jax.vmap(lambda key: thermox.sample(key, ts, x0, A_true, b_true, D_true))(
         rks
     )
 
-    A_sqrt_init = jnp.tril(jnp.eye(3) + jax.random.normal(rks[0], (3, 3)) * 1e-1)
+    A_init = jnp.eye(3) + jax.random.normal(rks[0], (3, 3)) * 1e-1
     b_init = jnp.zeros(3)
     D_sqrt_init = jnp.eye(3)
 
     log_prob_true = thermox.log_prob(ts, samps[0], A_true, b_true, D_true)
     log_prob_init = thermox.log_prob(
-        ts, samps[0], A_sqrt_init @ A_sqrt_init.T, b_init, D_sqrt_init @ D_sqrt_init.T
+        ts, samps[0], A_init, b_init, D_sqrt_init @ D_sqrt_init.T
     )
 
     assert log_prob_true > log_prob_init
 
     # Gradient descent
     def loss(params):
-        A_sqrt, b, D_sqrt = params
-        A_sqrt = jnp.tril(A_sqrt)
+        A, b, D_sqrt = params
         D_sqrt = jnp.tril(D_sqrt)
-        A = A_sqrt @ A_sqrt.T
         D = D_sqrt @ D_sqrt.T
         return -jax.vmap(lambda s: thermox.log_prob(ts, s, A, b, D))(
             samps
@@ -125,8 +123,8 @@ def test_MLE():
 
     val_and_g = jax.jit(jax.value_and_grad(loss))
 
-    ps = (A_sqrt_init, b_init, D_sqrt_init)
-    ps_true = (jnp.linalg.cholesky(A_true), b_true, jnp.linalg.cholesky(D_true))
+    ps = (A_init, b_init, D_sqrt_init)
+    ps_true = (A_true, b_true, jnp.linalg.cholesky(D_true))
 
     v, g = val_and_g(ps)
     v_true, g_true = val_and_g(ps_true)
@@ -138,7 +136,7 @@ def test_MLE():
     n_steps = 20000
     neg_log_probs = jnp.zeros(n_steps)
 
-    optimizer = optax.adam(1e-2)
+    optimizer = optax.adam(1e-3)
     opt_state = optimizer.init(ps)
 
     for i in range(n_steps):
@@ -149,7 +147,7 @@ def test_MLE():
         ps = optax.apply_updates(ps, updates)
         neg_log_probs = neg_log_probs.at[i].set(neg_log_prob)
 
-    A_recover = ps[0] @ ps[0].T
+    A_recover = ps[0]
     b_recover = ps[1]
     D_recover = ps[2] @ ps[2].T
 
