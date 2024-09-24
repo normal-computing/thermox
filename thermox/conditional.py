@@ -16,7 +16,7 @@ def mean(
     b: Array,
     D: Array | ProcessedDiffusionMatrix,
 ) -> Array:
-    """Mean of p(x_t | x_0)
+    """Computes the mean of p(x_t | x_0)
 
     For x_t evolving according to the SDE:
 
@@ -44,7 +44,7 @@ def covariance(
     A: Array | ProcessedDriftMatrix,
     D: Array | ProcessedDiffusionMatrix,
 ) -> Array:
-    """Covariance of p(x_t | x_0)
+    """Computes the covariance of p(x_t | x_0)
 
     For x evolving according to the SDE:
 
@@ -75,7 +75,7 @@ def mean_and_covariance(
     b: Array,
     D: Array | ProcessedDiffusionMatrix,
 ) -> tuple[Array, Array]:
-    """Mean and covariance of p(x_t | x_0)
+    """Computes the mean and covariance of p(x_t | x_0)
 
     For x evolving according to the SDE:
 
