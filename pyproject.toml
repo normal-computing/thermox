@@ -15,7 +15,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics",
     "License :: OSI Approved :: Apache Software License",
 ]
-dependencies = ["jax>=0.4.0", "jaxlib>=0.4.0", "fmmax>=0.8.0"]
+dependencies = ["jax>=0.4.0", "jaxlib>=0.4.0", "fmmax>=1.0.0"]
 
 [project.optional-dependencies]
 test = ["pre-commit", "pytest-cov", "ruff", "optax", "mypy"]
