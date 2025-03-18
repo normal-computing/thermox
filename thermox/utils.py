@@ -1,7 +1,7 @@
 from typing import NamedTuple, Tuple
 from jax import numpy as jnp
 from jax import Array
-from fmmax.utils import (
+from fmmax.eig import (
     eig,
 )  # differentiable and jit-able eigendecomposition, not yet available in jax, see https://github.com/google/jax/issues/2748
 
