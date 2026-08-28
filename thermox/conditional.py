@@ -1,4 +1,3 @@
-from jax import numpy as jnp
 from jax import Array
 
 from thermox.utils import (
@@ -6,7 +5,7 @@ from thermox.utils import (
     ProcessedDiffusionMatrix,
     handle_matrix_inputs,
 )
-from thermox.sampler import expm_vp
+from thermox.sampler import expm_vp, transition_cov
 
 
 def mean(
@@ -60,11 +59,7 @@ def covariance(
     """
     A_y, D = handle_matrix_inputs(A, D)
 
-    identity_diffusion_cov = (
-        A_y.sym_eigvecs
-        @ jnp.diag((1 - jnp.exp(-2 * A_y.sym_eigvals * t)) / (2 * A_y.sym_eigvals))
-        @ A_y.sym_eigvecs.T
-    )
+    identity_diffusion_cov = transition_cov(A_y, t)
     return D.sqrt @ identity_diffusion_cov @ D.sqrt.T
 
 

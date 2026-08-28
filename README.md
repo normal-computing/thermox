@@ -9,7 +9,7 @@ To collect samples from this process, define sampling times `ts`, initial state 
 ```python
 thermox.sample(key, ts, x0, A, b, D) 
 ```
-Samples are then collected by exact diagonalization (therefore there is no discretization error) and JAX scans.
+Samples are then collected by exact diagonalization (therefore there is no discretization error) and JAX scans. This holds for any stable drift matrix `A` (not necessarily symmetric or normal) and any positive definite diffusion matrix `D`; sampling stays O(d^2) per step on any time grid.
 
 You can access log-probabilities of the OU process by running `thermox.log_prob`:
 
